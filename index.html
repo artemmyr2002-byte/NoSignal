@@ -7,75 +7,65 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;background:#313338;color:#fff;font-family:sans-serif;display:flex;height:100vh}
-
-/* layout */
-.servers{width:72px;background:#1e1f22}
-.channels{width:220px;background:#2b2d31;padding:10px}
+body{margin:0;background:#0f1115;color:#e3e5e8;font-family:sans-serif}
+.app{display:flex;height:100vh}
+.servers{width:72px;background:#0c0e12}
+.channels{width:240px;background:#1a1d23}
 .chat{flex:1;display:flex;flex-direction:column}
-
-/* chat */
+.members{width:240px;background:#1a1d23}
 .messages{flex:1;overflow:auto;padding:10px}
 .msg{display:flex;gap:10px;padding:6px}
-.msg:hover{background:#2e3035}
+.msg:hover{background:#222}
 .avatar{width:40px;height:40px;border-radius:50%}
-
-.input{padding:10px;background:#383a40}
-input{width:100%;padding:10px;background:#1e1f22;border:none;color:white}
-
-/* profile */
-.profile{
-position:absolute;bottom:0;left:72px;width:220px;
-background:#232428;padding:10px;display:flex;gap:10px
-}
+.input{padding:10px}
+input{width:100%;padding:10px;background:#2b2f36;border:none;color:white}
+.profile{position:fixed;bottom:0;left:72px;width:240px;background:#16181d;padding:10px;display:flex;gap:10px}
 .profile img{width:32px;height:32px;border-radius:50%}
-
-/* auth */
-#authModal{
-position:fixed;inset:0;background:#000a;
-display:flex;align-items:center;justify-content:center
-}
-.auth-box{
-background:#2b2d31;padding:20px;border-radius:10px;width:300px
-}
-.auth-box input{
-width:100%;margin:5px 0;padding:10px;background:#1e1f22;border:none;color:white
-}
-
-/* debug */
-#debug{
-position:fixed;bottom:0;left:0;width:100%;
-max-height:150px;overflow:auto;background:black;
-color:lime;font-size:10px
-}
+.topbar{padding:10px;border-bottom:1px solid #222;display:flex;justify-content:space-between}
+.channel{padding:10px;cursor:pointer}
+.channel:hover{background:#333}
 </style>
 </head>
 
 <body>
 
+<div class="app">
+
 <div class="servers"></div>
 
-<div class="channels">
-  <b># general</b>
-</div>
+<div class="channels" id="channelsPanel"></div>
 
 <div class="chat">
+  <div class="topbar">
+    <span id="channelName"># general</span>
+    <div>
+      <button onclick="openAdmin()">⚙️</button>
+      <button onclick="openSettings()">👤</button>
+    </div>
+  </div>
+
   <div id="messages" class="messages"></div>
+
   <div class="input">
     <input id="msgInput" placeholder="Сообщение...">
   </div>
 </div>
 
+<div class="members" id="members"></div>
+
+</div>
+
 <div class="profile">
   <img id="myAvatar">
-  <span id="myName">...</span>
+  <span id="myName"></span>
 </div>
 
 <!-- AUTH -->
-<div id="authModal">
-  <div class="auth-box">
+<div id="authModal" style="position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center">
+  <div style="background:#1e1f22;padding:20px;border-radius:10px">
     <h2 id="authTitle">Вход</h2>
     <input id="email" placeholder="Email">
     <input id="password" type="password" placeholder="Пароль">
@@ -85,108 +75,84 @@ color:lime;font-size:10px
   </div>
 </div>
 
-<div id="debug"></div>
+<!-- SETTINGS -->
+<div id="settings" style="display:none;position:fixed;inset:0;background:#000a">
+  <div style="background:#1e1f22;margin:50px auto;padding:20px;width:300px">
+    <input id="newName" placeholder="Имя">
+    <button onclick="saveSettings()">Сохранить</button>
+    <button onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminPanel" style="display:none;position:fixed;inset:0;background:#0f1115;color:white">
+  <canvas id="chart"></canvas>
+  <div id="topUsers"></div>
+</div>
 
 <script>
-const log = (t)=> debug.innerHTML += "<div>"+t+"</div>";
-
 const firebaseConfig = {
-apiKey:"AIzaSyBo...",
-authDomain:"voidlauncher-bab33.firebaseapp.com",
-projectId:"voidlauncher-bab33"
+  apiKey: "AIzaSyBo9z598gFXbx6hX9pDhz5LGS4Uncx0hDg",
+  authDomain: "voidlauncher-bab33.firebaseapp.com",
+  projectId: "voidlauncher-bab33"
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let currentUser;
-let currentUserData = {displayName:"Аноним",avatarBase64:null};
-let isRegister=false;
+let currentUser, currentUserData={}, currentChannelId="general", isRegister=false;
 
-/* AUTH UI */
 function toggleAuth(){
   isRegister=!isRegister;
-  authTitle.textContent = isRegister ? "Регистрация":"Вход";
-  regName.style.display = isRegister?"block":"none";
+  authTitle.textContent=isRegister?"Регистрация":"Вход";
+  regName.style.display=isRegister?"block":"none";
 }
 
-async function login(){
-  const e=email.value;
-  const p=password.value;
+window.login=async()=>{
+  const e=email.value,p=password.value;
 
-  if(isRegister){
-    const cred = await auth.createUserWithEmailAndPassword(e,p);
-    await db.collection("users").doc(cred.user.uid).set({
-      displayName:regName.value||"Аноним",
-      avatarBase64:null
-    });
-    return;
-  }
+  try{
+    if(isRegister){
+      const cred=await auth.createUserWithEmailAndPassword(e,p);
 
-  await auth.signInWithEmailAndPassword(e,p);
-}
+      await db.collection("users").doc(cred.user.uid).set({
+        displayName:regName.value||"Аноним",
+        role:"user",
+        msgCount:0
+      });
 
-/* AUTH STATE */
+      return;
+    }
+    await auth.signInWithEmailAndPassword(e,p);
+  }catch(err){alert(err.message)}
+};
+
 auth.onAuthStateChanged(async user=>{
-  if(!user){
-    authModal.style.display="flex";
-    return;
-  }
-
-  log("LOGIN OK");
+  if(!user){authModal.style.display="flex";return}
   authModal.style.display="none";
+
   currentUser=user;
 
   const ref=db.collection("users").doc(user.uid);
   const snap=await ref.get();
 
-  if(snap.exists){
-    currentUserData=snap.data();
-  }
+  if(snap.exists) currentUserData=snap.data();
 
   loadProfile();
   loadMessages();
+  loadMembers();
+  loadChannels();
+
+  setInterval(()=>ref.set({lastActive:Date.now()},{merge:true}),20000);
 });
 
-/* PROFILE */
 function loadProfile(){
-  myAvatar.src = currentUserData.avatarBase64 || "https://api.dicebear.com/7.x/identicon/svg?seed="+currentUser.uid;
-  myName.textContent = currentUserData.displayName;
+  myName.textContent=currentUserData.displayName;
 }
 
-myName.onclick=async ()=>{
-  const name=prompt("Имя:");
-  if(!name) return;
-
-  await db.collection("users").doc(currentUser.uid).set({
-    displayName:name
-  },{merge:true});
-
-  currentUserData.displayName=name;
-  loadProfile();
-};
-
-myAvatar.onclick=()=>{
-  const input=document.createElement("input");
-  input.type="file";
-  input.onchange=()=>{
-    const r=new FileReader();
-    r.onload=async ()=>{
-      await db.collection("users").doc(currentUser.uid).set({
-        avatarBase64:r.result
-      },{merge:true});
-
-      currentUserData.avatarBase64=r.result;
-      loadProfile();
-    };
-    r.readAsDataURL(input.files[0]);
-  };
-  input.click();
-};
-
-/* SEND */
-msgInput.addEventListener("keydown", async e=>{
+msgInput.addEventListener("keydown",async e=>{
   if(e.key==="Enter"){
     const text=msgInput.value.trim();
     if(!text) return;
@@ -195,39 +161,99 @@ msgInput.addEventListener("keydown", async e=>{
       text,
       uid:currentUser.uid,
       displayName:currentUserData.displayName,
-      avatarBase64:currentUserData.avatarBase64,
-      channelId:"general",
-      timestamp:new Date(),
-      reactions:{}
+      channelId:currentChannelId,
+      timestamp:new Date()
     });
+
+    await db.collection("users").doc(currentUser.uid).set({
+      msgCount:firebase.firestore.FieldValue.increment(1)
+    },{merge:true});
 
     msgInput.value="";
   }
 });
 
-/* LOAD */
 function loadMessages(){
   db.collection("messages")
-  .where("channelId","==","general")
+  .where("channelId","==",currentChannelId)
   .orderBy("timestamp")
   .onSnapshot(snap=>{
     messages.innerHTML="";
-
     snap.forEach(doc=>{
       const m=doc.data();
-
       messages.innerHTML+=`
       <div class="msg">
-        <img class="avatar" src="${m.avatarBase64||'https://api.dicebear.com/7.x/identicon/svg?seed='+m.uid}">
-        <div>
-          <b>${m.displayName}</b>
-          <div>${m.text}</div>
-        </div>
+        <div><b>${m.displayName}</b><div>${m.text}</div></div>
       </div>`;
     });
+  });
+}
 
-    messages.scrollTop=messages.scrollHeight;
-  },e=>log("ERR:"+e.message));
+function loadMembers(){
+  db.collection("users").onSnapshot(snap=>{
+    members.innerHTML="";
+    snap.forEach(doc=>{
+      const u=doc.data();
+      members.innerHTML+=`<div>${u.displayName}</div>`;
+    });
+  });
+}
+
+function loadChannels(){
+  db.collection("channels").onSnapshot(snap=>{
+    channelsPanel.innerHTML="";
+    snap.forEach(doc=>{
+      channelsPanel.innerHTML+=`
+      <div class="channel" onclick="switchChannel('${doc.id}')">
+      # ${doc.id}
+      </div>`;
+    });
+  });
+}
+
+function switchChannel(id){
+  currentChannelId=id;
+  channelName.textContent="# "+id;
+  loadMessages();
+}
+
+function openSettings(){settings.style.display="block"}
+function saveSettings(){
+  db.collection("users").doc(currentUser.uid).set({
+    displayName:newName.value
+  },{merge:true});
+}
+function logout(){auth.signOut()}
+
+function openAdmin(){
+  adminPanel.style.display="block";
+  buildChart();
+  loadTop();
+}
+
+async function loadTop(){
+  const snap=await db.collection("users").orderBy("msgCount","desc").limit(5).get();
+  topUsers.innerHTML="";
+  snap.forEach(doc=>{
+    const u=doc.data();
+    topUsers.innerHTML+=`<div>${u.displayName} - ${u.msgCount}</div>`;
+  });
+}
+
+let chart;
+async function buildChart(){
+  const snap=await db.collection("messages").get();
+  const labels=["Всего"];
+  const data=[snap.size];
+
+  const ctx=document.getElementById("chart");
+
+  if(chart) chart.destroy();
+
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{data}]}
+  });
 }
 </script>
 
