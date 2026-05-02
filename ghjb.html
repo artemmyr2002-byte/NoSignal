@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+body{margin:0;background:#313338;color:#fff;font-family:sans-serif;display:flex;height:100vh}
+
+/* layout */
+.servers{width:72px;background:#1e1f22}
+.channels{width:220px;background:#2b2d31;padding:10px}
+.chat{flex:1;display:flex;flex-direction:column}
+
+/* chat */
+.messages{flex:1;overflow:auto;padding:10px}
+.msg{display:flex;gap:10px;padding:6px}
+.msg:hover{background:#2e3035}
+.avatar{width:40px;height:40px;border-radius:50%}
+
+.input{padding:10px;background:#383a40}
+input{width:100%;padding:10px;background:#1e1f22;border:none;color:white}
+
+/* profile */
+.profile{
+position:absolute;bottom:0;left:72px;width:220px;
+background:#232428;padding:10px;display:flex;gap:10px
+}
+.profile img{width:32px;height:32px;border-radius:50%}
+
+/* auth */
+#authModal{
+position:fixed;inset:0;background:#000a;
+display:flex;align-items:center;justify-content:center
+}
+.auth-box{
+background:#2b2d31;padding:20px;border-radius:10px;width:300px
+}
+.auth-box input{
+width:100%;margin:5px 0;padding:10px;background:#1e1f22;border:none;color:white
+}
+
+/* debug */
+#debug{
+position:fixed;bottom:0;left:0;width:100%;
+max-height:150px;overflow:auto;background:black;
+color:lime;font-size:10px
+}
+</style>
+</head>
+
+<body>
+
+<div class="servers"></div>
+
+<div class="channels">
+  <b># general</b>
+</div>
+
+<div class="chat">
+  <div id="messages" class="messages"></div>
+  <div class="input">
+    <input id="msgInput" placeholder="Сообщение...">
+  </div>
+</div>
+
+<div class="profile">
+  <img id="myAvatar">
+  <span id="myName">...</span>
+</div>
+
+<!-- AUTH -->
+<div id="authModal">
+  <div class="auth-box">
+    <h2 id="authTitle">Вход</h2>
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Пароль">
+    <input id="regName" placeholder="Имя" style="display:none">
+    <button onclick="login()">OK</button>
+    <p onclick="toggleAuth()">Регистрация</p>
+  </div>
+</div>
+
+<div id="debug"></div>
+
+<script>
+const log = (t)=> debug.innerHTML += "<div>"+t+"</div>";
+
+const firebaseConfig = {
+apiKey:"AIzaSyBo...",
+authDomain:"voidlauncher-bab33.firebaseapp.com",
+projectId:"voidlauncher-bab33"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser;
+let currentUserData = {displayName:"Аноним",avatarBase64:null};
+let isRegister=false;
+
+/* AUTH UI */
+function toggleAuth(){
+  isRegister=!isRegister;
+  authTitle.textContent = isRegister ? "Регистрация":"Вход";
+  regName.style.display = isRegister?"block":"none";
+}
+
+async function login(){
+  const e=email.value;
+  const p=password.value;
+
+  if(isRegister){
+    const cred = await auth.createUserWithEmailAndPassword(e,p);
+    await db.collection("users").doc(cred.user.uid).set({
+      displayName:regName.value||"Аноним",
+      avatarBase64:null
+    });
+    return;
+  }
+
+  await auth.signInWithEmailAndPassword(e,p);
+}
+
+/* AUTH STATE */
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    authModal.style.display="flex";
+    return;
+  }
+
+  log("LOGIN OK");
+  authModal.style.display="none";
+  currentUser=user;
+
+  const ref=db.collection("users").doc(user.uid);
+  const snap=await ref.get();
+
+  if(snap.exists){
+    currentUserData=snap.data();
+  }
+
+  loadProfile();
+  loadMessages();
+});
+
+/* PROFILE */
+function loadProfile(){
+  myAvatar.src = currentUserData.avatarBase64 || "https://api.dicebear.com/7.x/identicon/svg?seed="+currentUser.uid;
+  myName.textContent = currentUserData.displayName;
+}
+
+myName.onclick=async ()=>{
+  const name=prompt("Имя:");
+  if(!name) return;
+
+  await db.collection("users").doc(currentUser.uid).set({
+    displayName:name
+  },{merge:true});
+
+  currentUserData.displayName=name;
+  loadProfile();
+};
+
+myAvatar.onclick=()=>{
+  const input=document.createElement("input");
+  input.type="file";
+  input.onchange=()=>{
+    const r=new FileReader();
+    r.onload=async ()=>{
+      await db.collection("users").doc(currentUser.uid).set({
+        avatarBase64:r.result
+      },{merge:true});
+
+      currentUserData.avatarBase64=r.result;
+      loadProfile();
+    };
+    r.readAsDataURL(input.files[0]);
+  };
+  input.click();
+};
+
+/* SEND */
+msgInput.addEventListener("keydown", async e=>{
+  if(e.key==="Enter"){
+    const text=msgInput.value.trim();
+    if(!text) return;
+
+    await db.collection("messages").add({
+      text,
+      uid:currentUser.uid,
+      displayName:currentUserData.displayName,
+      avatarBase64:currentUserData.avatarBase64,
+      channelId:"general",
+      timestamp:new Date(),
+      reactions:{}
+    });
+
+    msgInput.value="";
+  }
+});
+
+/* LOAD */
+function loadMessages(){
+  db.collection("messages")
+  .where("channelId","==","general")
+  .orderBy("timestamp")
+  .onSnapshot(snap=>{
+    messages.innerHTML="";
+
+    snap.forEach(doc=>{
+      const m=doc.data();
+
+      messages.innerHTML+=`
+      <div class="msg">
+        <img class="avatar" src="${m.avatarBase64||'https://api.dicebear.com/7.x/identicon/svg?seed='+m.uid}">
+        <div>
+          <b>${m.displayName}</b>
+          <div>${m.text}</div>
+        </div>
+      </div>`;
+    });
+
+    messages.scrollTop=messages.scrollHeight;
+  },e=>log("ERR:"+e.message));
+}
+</script>
+
+</body>
+</html>
