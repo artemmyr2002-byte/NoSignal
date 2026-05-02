@@ -7,25 +7,22 @@
 <title>NoSignal Chat</title>
 
 <link rel="stylesheet" href="style.css">
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
 </head>
 
 <body>
 
-<div class="layout">
+<div class="app">
 
-  <div class="sidebar" id="users"></div>
+  <div class="sidebar">
+    <h3>Users</h3>
+    <div id="users"></div>
+  </div>
 
   <div class="chat">
 
     <div id="messages"></div>
 
-    <input type="file" id="fileInput" hidden>
-    <input id="msgInput" placeholder="Сообщение...">
+    <input id="msgInput" placeholder="Написать сообщение...">
 
   </div>
 
