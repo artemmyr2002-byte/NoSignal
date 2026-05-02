@@ -2,290 +2,36 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NoSignal</title>
+<title>NoSignal Chat</title>
+
+<link rel="stylesheet" href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<style>
-body{
-  margin:0;
-  background:#0f1115;
-  color:#e3e5e8;
-  font-family:sans-serif;
-}
-
-.app{
-  display:flex;
-  height:100vh;
-}
-
-.channels{
-  width:240px;
-  background:#16181d;
-  overflow:auto;
-}
-
-.channel{
-  padding:12px;
-  border-bottom:1px solid #222;
-  cursor:pointer;
-}
-
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-.topbar{
-  padding:10px;
-  background:#16181d;
-  display:flex;
-  justify-content:space-between;
-}
-
-.messages{
-  flex:1;
-  overflow:auto;
-  padding:10px;
-}
-
-.msg{
-  padding:8px;
-  border-radius:8px;
-}
-
-.msg img{
-  max-width:200px;
-  border-radius:10px;
-}
-
-.input{
-  display:flex;
-  gap:8px;
-  padding:10px;
-  background:#16181d;
-}
-
-input{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#2b2f36;
-  color:white;
-}
-
-button{
-  background:#5865f2;
-  border:none;
-  color:white;
-  padding:10px;
-  border-radius:8px;
-}
-
-#dropZone{
-  position:fixed;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background:rgba(0,0,0,0.6);
-  color:white;
-  border:2px dashed #5865f2;
-}
-</style>
 </head>
 
 <body>
 
-<div id="dropZone">Перетащи файл сюда</div>
+<div class="layout">
 
-<div class="app">
-
-  <div class="channels" id="channels"></div>
+  <div class="sidebar" id="users"></div>
 
   <div class="chat">
 
-    <div class="topbar">
-      <span id="channelName"># general</span>
-    </div>
+    <div id="messages"></div>
 
-    <div id="messages" class="messages"></div>
-
-    <div class="input">
-      <button onclick="fileInput.click()">📎</button>
-      <input id="msgInput" placeholder="Сообщение...">
-      <input type="file" id="fileInput" style="display:none">
-    </div>
+    <input type="file" id="fileInput" hidden>
+    <input id="msgInput" placeholder="Сообщение...">
 
   </div>
 
 </div>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBo9z598gFXbx6hX9pDhz5LGS4Uncx0hDg",
-  authDomain: "voidlauncher-bab33.firebaseapp.com",
-  projectId: "voidlauncher-bab33"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-let currentChannel="general";
-
-/* SEND TEXT */
-msgInput.addEventListener("keydown", async e=>{
-  if(e.key==="Enter"){
-    const text = msgInput.value.trim();
-    if(!text) return;
-
-    await db.collection("messages").add({
-      text,
-      channelId:currentChannel,
-      timestamp:new Date()
-    });
-
-    msgInput.value="";
-  }
-});
-
-/* LOAD */
-function loadMessages(){
-  db.collection("messages")
-  .where("channelId","==",currentChannel)
-  .orderBy("timestamp")
-  .onSnapshot(snap=>{
-    messages.innerHTML="";
-
-    snap.forEach(doc=>{
-      const m = doc.data();
-
-      const el = document.createElement("div");
-      el.className="msg";
-
-      if(m.fileData){
-        if(m.fileType?.startsWith("image")){
-          el.innerHTML = `<b>${m.text||""}</b><br><img src="${m.fileData}">`;
-        }else{
-          el.innerHTML = `<a href="${m.fileData}" download="${m.fileName}">📄 ${m.fileName}</a>`;
-        }
-      }else{
-        el.textContent = m.text;
-      }
-
-      messages.appendChild(el);
-    });
-
-    messages.scrollTop = messages.scrollHeight;
-  });
-}
-
-/* FILE INPUT */
-fileInput.addEventListener("change", e=>{
-  uploadFile(e.target.files[0]);
-});
-
-/* DRAG DROP */
-document.addEventListener("dragover",e=>{
-  e.preventDefault();
-  dropZone.style.display="flex";
-});
-
-document.addEventListener("dragleave",e=>{
-  dropZone.style.display="none";
-});
-
-document.addEventListener("drop",e=>{
-  e.preventDefault();
-  dropZone.style.display="none";
-  uploadFile(e.dataTransfer.files[0]);
-});
-
-/* UPLOAD + COMPRESS */
-async function uploadFile(file){
-
-  if(!file) return;
-
-  if(!file.type.startsWith("image")){
-    const r = new FileReader();
-    r.onload = async ()=>{
-      await db.collection("messages").add({
-        fileName:file.name,
-        fileType:file.type,
-        fileData:r.result,
-        channelId:currentChannel,
-        timestamp:new Date()
-      });
-    };
-    r.readAsDataURL(file);
-    return;
-  }
-
-  const img = new Image();
-  const r = new FileReader();
-
-  r.onload = e=> img.src = e.target.result;
-
-  img.onload = async ()=>{
-
-    const max=1280;
-    let w=img.width,h=img.height;
-
-    if(w>h && w>max){h*=max/w;w=max}
-    else if(h>max){w*=max/h;h=max}
-
-    const c=document.createElement("canvas");
-    const ctx=c.getContext("2d");
-
-    c.width=w;
-    c.height=h;
-
-    ctx.drawImage(img,0,0,w,h);
-
-    const compressed = c.toDataURL("image/jpeg",0.7);
-
-    await db.collection("messages").add({
-      fileName:file.name,
-      fileType:"image/jpeg",
-      fileData:compressed,
-      channelId:currentChannel,
-      timestamp:new Date()
-    });
-  };
-
-  r.readAsDataURL(file);
-}
-
-/* CHANNELS */
-function loadChannels(){
-  db.collection("channels").onSnapshot(snap=>{
-    channels.innerHTML="";
-    snap.forEach(doc=>{
-      channels.innerHTML+=`
-        <div class="channel" onclick="switchChannel('${doc.id}')">
-          # ${doc.id}
-        </div>
-      `;
-    });
-  });
-}
-
-function switchChannel(id){
-  currentChannel=id;
-  channelName.textContent="# "+id;
-  loadMessages();
-}
-
-/* INIT */
-loadChannels();
-loadMessages();
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
