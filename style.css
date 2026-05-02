@@ -1,3 +1,4 @@
+document.body.innerHTML = "<h1>JS WORKS</h1>";
 body{
   margin:0;
   font-family:sans-serif;
