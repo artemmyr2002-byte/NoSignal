@@ -1,12 +1,10 @@
-<div class="section-title">📡 Servers</div>
-<div id="servers"></div>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NeonSpace Chat</title>
+<title>NeonSpace</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -18,32 +16,29 @@
 
 <body>
 
-<div class="bg"></div>
-
 <div class="app">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
 
-    <div class="profile" id="profile"></div>
+    <div id="profile"></div>
 
-    <div class="section-title">🟢 Online</div>
+    <button onclick="googleLogin()">🔵 Login Google</button>
+
+    <div class="section-title">Servers</div>
+    <div id="servers"></div>
+
+    <button onclick="createServer()">+ Create server</button>
+
+    <div class="section-title">Users</div>
     <div id="users"></div>
-
-    <div class="section-title">📡 Channels</div>
-    <div class="channel active"># general</div>
-    <div class="channel"># random</div>
 
   </div>
 
-  <!-- CHAT -->
   <div class="chat">
 
     <div id="messages"></div>
 
-    <div class="inputBar">
-      <input id="msgInput" placeholder="Написать сообщение...">
-    </div>
+    <input id="msgInput" placeholder="Message...">
 
   </div>
 
