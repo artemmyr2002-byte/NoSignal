@@ -1,21 +1,61 @@
 body{
   margin:0;
   font-family: Arial;
-  background:#1e1f22;
   color:white;
+  overflow:hidden;
 }
 
+/* background */
+.bg{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background: radial-gradient(circle at top, #1a1a40, #05060a);
+  z-index:-1;
+}
+
+/* layout */
 .app{
   display:flex;
   height:100vh;
 }
 
+/* sidebar */
 .sidebar{
-  width:200px;
-  background:#2b2d31;
+  width:240px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(16px);
   padding:10px;
+  border-right:1px solid rgba(255,255,255,0.1);
 }
 
+.profile{
+  padding:10px;
+  margin-bottom:10px;
+  background: rgba(255,255,255,0.06);
+  border-radius:12px;
+}
+
+.section-title{
+  opacity:0.6;
+  margin-top:10px;
+  font-size:12px;
+}
+
+/* channels */
+.channel{
+  padding:8px;
+  margin-top:5px;
+  border-radius:8px;
+  background: rgba(255,255,255,0.04);
+  cursor:pointer;
+}
+
+.channel.active{
+  background: rgba(0,200,255,0.2);
+}
+
+/* chat */
 .chat{
   flex:1;
   display:flex;
@@ -28,10 +68,24 @@ body{
   padding:10px;
 }
 
+.msg{
+  margin:6px 0;
+  padding:10px;
+  background: rgba(255,255,255,0.05);
+  border-radius:10px;
+}
+
+/* input */
+.inputBar{
+  padding:10px;
+}
+
 input{
+  width:100%;
   padding:12px;
   border:none;
   outline:none;
-  background:#313338;
+  border-radius:10px;
+  background: rgba(255,255,255,0.08);
   color:white;
 }
