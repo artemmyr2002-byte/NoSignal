@@ -1,51 +1,131 @@
-const msgInput = document.getElementById("msgInput");
-const messages = document.getElementById("messages");
-const users = document.getElementById("users");
+const firebaseConfig = {
+  apiKey: "AIzaSyBo9z598gFXbx9pH9zLGS4Uncx0hDg",
+  authDomain: "voidlauncher-bab33.firebaseapp.com",
+  projectId: "voidlauncher-bab33",
+  storageBucket: "voidlauncher-bab33.firebasestorage.app",
+  messagingSenderId: "273997309805",
+  appId: "1:273997309805:web:a43ce719cb30fcf9dc9c64"
+};
 
-let user = "User_" + Math.floor(Math.random()*9999);
+firebase.initializeApp(firebaseConfig);
 
-/* LOAD */
-function load(){
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-  let data = JSON.parse(localStorage.getItem("msgs") || "[]");
+let me;
+let username = "User_" + Math.floor(Math.random()*9999);
+let channel = "general";
 
-  messages.innerHTML = "";
+/* SAFE LOGIN */
+auth.signInAnonymously()
+.then(u=>{
+  me = u.user;
 
-  data.forEach(m=>{
-    messages.innerHTML += `
-      <div><b>${m.user}</b>: ${m.text}</div>
-    `;
-  });
+  db.collection("users").doc(me.uid).set({
+    name: username,
+    online: true,
+    last: Date.now()
+  }, {merge:true});
 
-  messages.scrollTop = messages.scrollHeight;
-}
-
-load();
-
-/* SEND */
-msgInput.addEventListener("keydown", e=>{
-  if(e.key !== "Enter") return;
-
-  let text = msgInput.value.trim();
-  if(!text) return;
-
-  let data = JSON.parse(localStorage.getItem("msgs") || "[]");
-
-  data.push({
-    user,
-    text
-  });
-
-  localStorage.setItem("msgs", JSON.stringify(data));
-
-  msgInput.value = "";
-
-  load();
+  init();
+})
+.catch(err=>{
+  console.log("auth error", err);
+  document.body.innerHTML = "<h2>Auth error</h2>";
 });
 
-/* USERS (фейковые) */
-users.innerHTML = `
-  <div>🟢 ${user}</div>
-  <div>🟢 Friend_1</div>
-  <div>⚪ Friend_2</div>
-`;
+/* INIT */
+function init(){
+  loadMessages();
+  loadUsers();
+  renderProfile();
+}
+
+/* PROFILE */
+function renderProfile(){
+  document.getElementById("profile").innerHTML = `
+    <b>${username}</b><br>
+    <small>ID: ${me.uid.slice(0,6)}</small>
+  `;
+}
+
+/* SEND */
+document.getElementById("msgInput").addEventListener("keydown", async e=>{
+  if(e.key !== "Enter") return;
+
+  let text = e.target.value.trim();
+  if(!text) return;
+
+  try{
+    await db.collection("messages").add({
+      text,
+      uid: me.uid,
+      name: username,
+      channel,
+      time: Date.now()
+    });
+  }catch(e){
+    console.log(e);
+  }
+
+  e.target.value="";
+});
+
+/* MESSAGES */
+function loadMessages(){
+
+  db.collection("messages")
+  .where("channel","==",channel)
+  .orderBy("time")
+  .onSnapshot(snap=>{
+
+    const box = document.getElementById("messages");
+    box.innerHTML = "";
+
+    snap.forEach(d=>{
+      let m = d.data();
+
+      box.innerHTML += `
+        <div class="msg">
+          <b>${m.name}</b><br>
+          ${m.text}
+        </div>
+      `;
+    });
+
+    box.scrollTop = box.scrollHeight;
+  });
+
+}
+
+/* USERS */
+function loadUsers(){
+
+  db.collection("users").onSnapshot(snap=>{
+
+    const box = document.getElementById("users");
+    box.innerHTML = "";
+
+    snap.forEach(d=>{
+      let u = d.data();
+
+      box.innerHTML += `
+        <div>
+          ${u.online ? "🟢" : "⚪"} ${u.name}
+        </div>
+      `;
+    });
+
+  });
+
+}
+
+/* KEEP ONLINE */
+setInterval(()=>{
+  if(me){
+    db.collection("users").doc(me.uid).update({
+      online:true,
+      last:Date.now()
+    });
+  }
+},5000);
