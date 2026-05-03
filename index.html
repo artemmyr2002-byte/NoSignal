@@ -8,7 +8,7 @@
 
 <link rel="stylesheet" href="./style.css">
 
-<!-- Firebase COMPAT -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -19,26 +19,28 @@
 <!-- AUTH -->
 <div id="auth" class="center">
   <h1>NovaChat</h1>
-  <button onclick="googleLogin()">Войти через Google</button>
-  <button onclick="guestLogin()">Продолжить как гость</button>
+  <button onclick="googleLogin()">🔐 Google</button>
+  <button onclick="guestLogin()">👤 Гость</button>
 </div>
 
 <!-- APP -->
 <div id="app" class="app hidden">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="logo">💬 Nova</div>
     <button onclick="createChat()">+ Новый чат</button>
     <div id="chatList"></div>
   </div>
 
-  <!-- CHAT -->
   <div class="chat">
 
     <div class="topbar">
       <span id="chatTitle">Выбери чат</span>
-      <button onclick="logout()">Выйти</button>
+
+      <div class="topActions">
+        <button class="iconBtn" onclick="openProfile()">👤</button>
+        <button class="iconBtn" onclick="logout()">⎋</button>
+      </div>
     </div>
 
     <div id="messages" class="messages"></div>
@@ -52,7 +54,25 @@
 
 </div>
 
-<script src="./app.js"></script>
+<!-- PROFILE -->
+<div id="profileModal" class="modal hidden">
+  <div class="modalBox glass">
 
+    <div class="modalHeader">
+      <h3>Профиль</h3>
+      <button onclick="closeProfile()">✕</button>
+    </div>
+
+    <div class="profileUI">
+      <img id="avatar">
+      <input id="profileName" placeholder="Ваше имя">
+    </div>
+
+    <button onclick="saveProfile()">Сохранить</button>
+
+  </div>
+</div>
+
+<script src="./app.js"></script>
 </body>
 </html>
