@@ -36,27 +36,75 @@ body{
   gap:6px;
 }
 
-.msg{
-  max-width:70%;
-  padding:10px;
-  border-radius:15px;
+/* СООБЩЕНИЕ */
+.msg-row{
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
 }
 
-.my{ align-self:flex-end; }
-.other{ align-self:flex-start; }
+/* МОИ */
+.my-row{
+  justify-content:flex-end;
+}
 
+/* ЧУЖИЕ */
+.other-row{
+  justify-content:flex-start;
+}
+
+/* АВАТАР */
+.avatar{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+/* ПУЗЫРЬ */
+.msg{
+  position:relative;
+  max-width:65%;
+  padding:10px 12px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#00a884,#008069);
+}
+
+/* ник */
 .name{
   font-size:12px;
   opacity:0.7;
   margin-bottom:3px;
 }
 
+/* фото */
+.msg img{
+  max-width:200px;
+  border-radius:10px;
+  margin-top:5px;
+}
+
+/* время */
 .meta{
   font-size:10px;
   opacity:0.6;
   margin-top:5px;
+  text-align:right;
 }
 
+/* кнопки */
+.actions{
+  display:none;
+  gap:5px;
+  margin-top:5px;
+}
+
+.actions button{
+  font-size:12px;
+  padding:3px 6px;
+}
+
+/* ввод */
 .send{
   display:flex;
   gap:5px;
