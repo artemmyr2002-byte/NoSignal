@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NovaChat</title>
+<title>NoSignal</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -13,12 +13,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 </head>
-
 <body>
 
 <!-- AUTH -->
-<div id="auth" class="screen">
-  <h1>NovaChat</h1>
+<div id="auth">
+  <h1>NoSignal</h1>
 
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Пароль">
@@ -27,37 +26,35 @@
   <button id="registerBtn">Регистрация</button>
   <button id="guestBtn">Гость</button>
 
-  <div id="authError"></div>
+  <div id="error"></div>
 </div>
 
 <!-- APP -->
-<div id="app" class="screen hidden">
+<div id="app" class="hidden">
 
-  <div class="topbar">
-    <span id="userName">...</span>
-    <div>
-      <button id="profileBtn">Профиль</button>
-      <button id="logoutBtn">Выйти</button>
-    </div>
+  <div class="top">
+    <span id="name">...</span>
+    <button id="profileBtn">Профиль</button>
+    <button id="logoutBtn">Выйти</button>
   </div>
 
 </div>
 
 <!-- PROFILE -->
-<div id="profileModal" class="modal hidden">
-  <div class="box">
+<div id="profile" class="hidden">
+  <div class="modal">
+
     <h3>Профиль</h3>
-    <img id="avatar">
-    <input id="nameInput" placeholder="Имя">
-    <button id="saveProfile">Сохранить</button>
+
+    <input id="newName" placeholder="Имя">
+
+    <button id="saveName">Сохранить</button>
     <button id="closeProfile">✕</button>
+
   </div>
 </div>
 
-<!-- JS (ВАЖНО: порядок) -->
 <script src="js/firebase.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/ui.js"></script>
 <script src="js/app.js"></script>
 
 </body>
