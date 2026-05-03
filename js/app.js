@@ -3,7 +3,6 @@ let selectedMsgId = null;
 
 function el(id){ return document.getElementById(id); }
 
-/* цвет */
 function getUserColor(uid){
   let hash = 0;
   for(let i=0;i<uid.length;i++){
@@ -19,11 +18,19 @@ function getUserColor(uid){
 window.onload = function(){
 
 /* AUTH */
-el("loginBtn").onclick = ()=>auth.signInWithEmailAndPassword(el("email").value, el("password").value);
-el("registerBtn").onclick = async ()=>{
-  const cred = await auth.createUserWithEmailAndPassword(el("email").value, el("password").value);
-  await db.collection("users").doc(cred.user.uid).set({name:"User"});
+el("loginBtn").onclick = async ()=>{
+  try{
+    await auth.signInWithEmailAndPassword(el("email").value, el("password").value);
+  }catch(e){ alert(e.message); }
 };
+
+el("registerBtn").onclick = async ()=>{
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(el("email").value, el("password").value);
+    await db.collection("users").doc(cred.user.uid).set({name:"User"});
+  }catch(e){ alert(e.message); }
+};
+
 el("guestBtn").onclick = ()=>auth.signInAnonymously();
 
 /* STATE */
@@ -35,6 +42,7 @@ auth.onAuthStateChanged(async u=>{
   }
 
   user = u;
+
   el("auth").classList.add("hidden");
   el("app").classList.remove("hidden");
 
@@ -84,9 +92,9 @@ function loadMessages(){
       d.style.background=`linear-gradient(135deg,${colors.c1},${colors.c2})`;
 
       d.innerHTML = `
-        <div class="name">${m.name}</div>
+        <div class="name" style="color:${colors.c2}">${m.name}</div>
         ${m.text}
-        <div class="meta">${new Date(m.time).toLocaleTimeString()}</div>
+        <div class="meta">${new Date(m.time).toLocaleTimeString()} ${isMe?"✓✓":""}</div>
       `;
 
       if(isMe){
