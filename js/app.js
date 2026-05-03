@@ -3,17 +3,23 @@ let openedMenu=null;
 
 function el(id){return document.getElementById(id);}
 
-function getUserColor(uid){
+/* 🔥 ГРАДИЕНТ */
+function getUserGradient(uid){
   if(!uid) uid="x";
+
   let hash=0;
   for(let i=0;i<uid.length;i++){
     hash=uid.charCodeAt(i)+((hash<<5)-hash);
   }
-  return `hsl(${Math.abs(hash%360)},70%,50%)`;
+
+  const h=Math.abs(hash%360);
+
+  return `linear-gradient(135deg, hsl(${h},70%,45%), hsl(${(h+40)%360},70%,55%))`;
 }
 
 window.onload=function(){
 
+/* закрытие меню */
 document.body.onclick=()=>{
   if(openedMenu){
     openedMenu.style.display="none";
@@ -21,6 +27,12 @@ document.body.onclick=()=>{
   }
 };
 
+/* 🔥 ВЫХОД */
+el("logoutBtn").onclick=()=>{
+  auth.signOut();
+};
+
+/* AUTH */
 el("loginBtn").onclick=()=>auth.signInWithEmailAndPassword(el("email").value,el("password").value);
 
 el("registerBtn").onclick=async ()=>{
@@ -30,7 +42,7 @@ el("registerBtn").onclick=async ()=>{
 
 el("guestBtn").onclick=()=>auth.signInAnonymously();
 
-/* ВАЖНО — УБРАЛИ name */
+/* STATE */
 auth.onAuthStateChanged(async u=>{
   if(!u){
     el("auth").classList.remove("hidden");
@@ -45,8 +57,10 @@ auth.onAuthStateChanged(async u=>{
 
   loadMessages();
 
+  /* 🔥 СРАЗУ ВНИЗ */
   setTimeout(()=>{
-    el("messages").scrollTop=999999;
+    const c=el("messages");
+    c.scrollTop=c.scrollHeight;
   },200);
 });
 
@@ -62,6 +76,12 @@ el("sendBtn").onclick=async ()=>{
   });
 
   el("msgInput").value="";
+
+  /* 🔥 ВНИЗ ПОСЛЕ ОТПРАВКИ */
+  const c=el("messages");
+  setTimeout(()=>{
+    c.scrollTop=c.scrollHeight;
+  },50);
 };
 
 /* ЗАГРУЗКА */
@@ -70,7 +90,7 @@ function loadMessages(){
   .onSnapshot(snap=>{
     const c=el("messages");
 
-    const atBottom=c.scrollHeight-c.scrollTop<=c.clientHeight+50;
+    const atBottom=c.scrollHeight-c.scrollTop<=c.clientHeight+80;
 
     c.innerHTML="";
 
@@ -78,15 +98,20 @@ function loadMessages(){
       const m=doc.data();
       const d=document.createElement("div");
 
-      d.className="msg "+(m.uid===user.uid?"my":"other");
-      d.style.background=getUserColor(m.uid);
+      const isMe = m.uid===user.uid;
+
+      d.className="msg "+(isMe?"my":"other");
+
+      /* 🔥 ГРАДИЕНТ */
+      d.style.background = getUserGradient(m.uid);
 
       d.innerHTML=`
         ${m.text}
-        <div class="meta">${new Date(m.time).toLocaleTimeString()}</div>
+        <div class="meta">${new Date(m.time).toLocaleTimeString()} ${isMe?"✓✓":""}</div>
       `;
 
-      if(m.uid===user.uid){
+      /* МЕНЮ */
+      if(isMe){
         const menu=document.createElement("div");
         menu.className="msg-menu";
 
@@ -126,6 +151,7 @@ function loadMessages(){
       c.appendChild(d);
     });
 
+    /* 🔥 УМНЫЙ СКРОЛЛ */
     if(atBottom){
       setTimeout(()=>{
         c.scrollTop=c.scrollHeight;
