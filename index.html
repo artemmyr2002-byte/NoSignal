@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="data:,">
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -26,12 +25,10 @@
 
 <div id="app" class="hidden">
 
+  <!-- 🔥 ТЕПЕРЬ НАЗВАНИЕ ЧАТА -->
   <div class="top">
-    <div id="name">User</div>
-    <div class="top-buttons">
-      <button id="profileBtn">Профиль</button>
-      <button id="logoutBtn">Выйти</button>
-    </div>
+    <div id="chatTitle">Общий чат</div>
+    <button id="logoutBtn">Выйти</button>
   </div>
 
   <div id="chat">
@@ -42,11 +39,7 @@
       <button id="sendBtn">➤</button>
     </div>
   </div>
-</div>
 
-<div id="menu" class="menu">
-  <button onclick="editMsg()">Изменить</button>
-  <button onclick="deleteMsg()">Удалить</button>
 </div>
 
 <script src="js/firebase.js"></script>
