@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NovaChat</title>
 
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -16,14 +16,14 @@
 
 <div id="auth" class="center">
   <h1>NovaChat</h1>
-  <button onclick="googleLogin()">Google</button>
-  <button onclick="guestLogin()">Гость</button>
+  <button id="googleBtn">Google</button>
+  <button id="guestBtn">Гость</button>
 </div>
 
 <div id="app" class="app hidden">
 
   <div class="sidebar">
-    <button onclick="createChat()">+ чат</button>
+    <button id="createChatBtn">+ чат</button>
     <div id="chatList"></div>
   </div>
 
@@ -33,8 +33,8 @@
       <span id="chatTitle">чат</span>
 
       <div>
-        <button onclick="openProfile()">👤</button>
-        <button onclick="logout()">⎋</button>
+        <button id="profileBtn">👤</button>
+        <button id="logoutBtn">⎋</button>
       </div>
     </div>
 
@@ -46,35 +46,37 @@
     <div id="messages" class="messages"></div>
 
     <div class="inputBar">
-      <input id="msgInput" placeholder="Сообщение...">
-      <button onclick="sendMsg()">➤</button>
+      <input id="msgInput">
+      <button id="sendBtn">➤</button>
     </div>
 
   </div>
 </div>
 
-<!-- ПРОФИЛЬ -->
+<!-- PROFILE -->
 <div id="profileModal" class="modal hidden">
   <div class="modalBox">
+
     <h3>Профиль</h3>
 
     <img id="avatar">
 
-    <input id="profileName" placeholder="Имя">
+    <input id="profileName">
 
     <div class="avatars">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" onclick="pickAvatar(this.src)">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=2" onclick="pickAvatar(this.src)">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" onclick="pickAvatar(this.src)">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" class="avatarOption">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=2" class="avatarOption">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" class="avatarOption">
     </div>
 
-    <button onclick="saveProfile()">Сохранить</button>
-    <button onclick="closeProfile()">✕</button>
+    <button id="saveProfileBtn">Сохранить</button>
+    <button id="closeProfileBtn">✕</button>
+
   </div>
 </div>
 
 <audio id="msgSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
-<script src="./app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
