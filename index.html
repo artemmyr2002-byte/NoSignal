@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="data:,">
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -27,7 +26,10 @@
 
   <div class="top">
     <div id="chatTitle">Общий чат</div>
-    <button id="logoutBtn">Выйти</button>
+    <div>
+      <button id="profileBtn">Профиль</button>
+      <button id="logoutBtn">Выйти</button>
+    </div>
   </div>
 
   <div id="chat">
@@ -35,10 +37,20 @@
 
     <div class="send">
       <input id="msgInput" placeholder="Сообщение...">
+      <input type="file" id="fileInput">
       <button id="sendBtn">➤</button>
     </div>
   </div>
 
+</div>
+
+<!-- ПРОФИЛЬ -->
+<div id="profile" class="profile hidden">
+  <div class="profile-box">
+    <input id="nameInput" placeholder="Ник">
+    <input type="file" id="avatarInput">
+    <button id="saveProfile">Сохранить</button>
+  </div>
 </div>
 
 <script src="js/firebase.js"></script>
