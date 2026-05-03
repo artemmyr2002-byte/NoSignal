@@ -1,83 +1,36 @@
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0b0c14;
-  color:white;
-}
-
-/* TOP */
-.topbar{
+/* header */
+.modalHeader{
   display:flex;
   justify-content:space-between;
-  padding:15px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-}
-
-/* APP */
-.app{
-  height:calc(100vh - 60px);
-  display:flex;
-  justify-content:center;
   align-items:center;
 }
 
-/* CHAT */
-#chat{
-  width:90%;
-  max-width:600px;
-  height:80%;
-  background:rgba(255,255,255,0.05);
-  border-radius:20px;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-}
-
-#messages{
-  flex:1;
-  overflow:auto;
-  padding:10px;
-}
-
-.msg{
-  margin:8px;
-  padding:10px;
-  background:rgba(255,255,255,0.08);
-  border-radius:12px;
-}
-
-/* input */
-.inputBar{
-  display:flex;
-  gap:5px;
-  padding:10px;
-}
-
-input{
-  flex:1;
-  padding:12px;
+/* крестик */
+.closeBtn{
+  background:none;
   border:none;
-  border-radius:10px;
-  background:rgba(255,255,255,0.08);
   color:white;
+  font-size:20px;
+  cursor:pointer;
+  opacity:0.7;
 }
 
-/* MODAL */
+.closeBtn:hover{
+  opacity:1;
+  transform:scale(1.2);
+}
+
+/* клик вне окна */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.6);
+  background:rgba(0,0,0,0.7);
   display:flex;
   justify-content:center;
   align-items:center;
 }
 
+/* чтобы клик не проходил внутрь */
 .modalBox{
-  width:300px;
-  padding:20px;
-  background:#1b1d2a;
-  border-radius:20px;
+  position:relative;
 }
-
-.hidden{ display:none; }
