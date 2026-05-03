@@ -1,58 +1,130 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#0f1220,#1a1f3c);
+  color:white;
+}
 
-<title>NovaChat</title>
+/* CENTER */
+.center{
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:15px;
+}
 
-<link rel="stylesheet" href="./style.css">
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#7b2ff7,#f107a3);
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
 
-<!-- Firebase COMPAT -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-</head>
+button:hover{
+  transform:scale(1.05);
+}
 
-<body>
+/* APP */
+.app{
+  display:flex;
+  height:100vh;
+}
 
-<!-- AUTH -->
-<div id="auth" class="center">
-  <h1>NovaChat</h1>
-  <button onclick="googleLogin()">Войти через Google</button>
-  <button onclick="guestLogin()">Продолжить как гость</button>
-</div>
+.hidden{display:none;}
 
-<!-- APP -->
-<div id="app" class="app hidden">
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  background:rgba(20,20,40,0.6);
+  backdrop-filter:blur(20px);
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+}
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="logo">💬 Nova</div>
-    <button onclick="createChat()">+ Новый чат</button>
-    <div id="chatList"></div>
-  </div>
+.logo{
+  font-size:20px;
+  margin-bottom:10px;
+}
 
-  <!-- CHAT -->
-  <div class="chat">
+#chatList div{
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:5px;
+  transition:0.2s;
+}
 
-    <div class="topbar">
-      <span id="chatTitle">Выбери чат</span>
-      <button onclick="logout()">Выйти</button>
-    </div>
+#chatList div:hover{
+  background:rgba(255,255,255,0.1);
+}
 
-    <div id="messages" class="messages"></div>
+/* CHAT */
+.chat{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
 
-    <div class="inputBar">
-      <input id="msgInput" placeholder="Сообщение...">
-      <button onclick="sendMsg()">➤</button>
-    </div>
+.topbar{
+  padding:10px;
+  background:rgba(20,20,40,0.6);
+  backdrop-filter:blur(20px);
+  display:flex;
+  justify-content:space-between;
+}
 
-  </div>
+/* MESSAGES */
+.messages{
+  flex:1;
+  overflow:auto;
+  padding:10px;
+}
 
-</div>
+.msg{
+  margin:8px 0;
+  animation:fade 0.2s ease;
+}
 
-<script src="./app.js"></script>
+@keyframes fade{
+  from{opacity:0; transform:translateY(5px);}
+  to{opacity:1;}
+}
 
-</body>
-</html>
+.me{
+  text-align:right;
+}
+
+.bubble{
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:12px;
+  max-width:70%;
+}
+
+.me .bubble{
+  background:linear-gradient(45deg,#7b2ff7,#f107a3);
+}
+
+.other .bubble{
+  background:rgba(255,255,255,0.1);
+}
+
+/* INPUT */
+.inputBar{
+  display:flex;
+  gap:5px;
+  padding:10px;
+}
+
+input{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+}
