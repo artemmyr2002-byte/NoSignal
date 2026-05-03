@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>NovaChat</title>
 
 <link rel="stylesheet" href="./style.css">
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -16,62 +14,66 @@
 
 <body>
 
-<!-- AUTH -->
 <div id="auth" class="center">
   <h1>NovaChat</h1>
-  <button onclick="googleLogin()">🔐 Google</button>
-  <button onclick="guestLogin()">👤 Гость</button>
+  <button onclick="googleLogin()">Google</button>
+  <button onclick="guestLogin()">Гость</button>
 </div>
 
-<!-- APP -->
 <div id="app" class="app hidden">
 
   <div class="sidebar">
-    <div class="logo">💬 Nova</div>
-    <button onclick="createChat()">+ Новый чат</button>
+    <button onclick="createChat()">+ чат</button>
     <div id="chatList"></div>
   </div>
 
   <div class="chat">
 
     <div class="topbar">
-      <span id="chatTitle">Выбери чат</span>
+      <span id="chatTitle">чат</span>
 
-      <div class="topActions">
-        <button class="iconBtn" onclick="openProfile()">👤</button>
-        <button class="iconBtn" onclick="logout()">⎋</button>
+      <div>
+        <button onclick="openProfile()">👤</button>
+        <button onclick="logout()">⎋</button>
       </div>
+    </div>
+
+    <div id="typingStatus" class="typing hidden">
+      <span id="typingName"></span>
+      <span class="dots"><span></span><span></span><span></span></span>
     </div>
 
     <div id="messages" class="messages"></div>
 
     <div class="inputBar">
-      <input id="msgInput" placeholder="Сообщение...">
+      <input id="msgInput">
       <button onclick="sendMsg()">➤</button>
     </div>
 
   </div>
-
 </div>
 
-<!-- PROFILE -->
+<!-- профиль -->
 <div id="profileModal" class="modal hidden">
-  <div class="modalBox glass">
+  <div class="modalBox">
+    <h3>Профиль</h3>
 
-    <div class="modalHeader">
-      <h3>Профиль</h3>
-      <button onclick="closeProfile()">✕</button>
+    <img id="avatar">
+
+    <input id="profileName">
+
+    <div class="avatars">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" onclick="pickAvatar(this.src)">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=2" onclick="pickAvatar(this.src)">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" onclick="pickAvatar(this.src)">
     </div>
 
-    <div class="profileUI">
-      <img id="avatar">
-      <input id="profileName" placeholder="Ваше имя">
-    </div>
-
-    <button onclick="saveProfile()">Сохранить</button>
-
+    <button onclick="saveProfile()">сохранить</button>
+    <button onclick="closeProfile()">✕</button>
   </div>
 </div>
+
+<audio id="msgSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
 
 <script src="./app.js"></script>
 </body>
