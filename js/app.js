@@ -3,13 +3,13 @@ let selectedMsgId = null;
 
 function el(id){ return document.getElementById(id); }
 
-/* 🎨 цвет */
+/* цвет */
 function getUserColor(uid){
   let hash = 0;
   for(let i=0;i<uid.length;i++){
     hash = uid.charCodeAt(i) + ((hash<<5)-hash);
   }
-  const h = hash % 360;
+  const h = Math.abs(hash % 360);
   return {
     c1:`hsl(${h},70%,45%)`,
     c2:`hsl(${(h+40)%360},70%,55%)`
@@ -19,23 +19,12 @@ function getUserColor(uid){
 window.onload = function(){
 
 /* AUTH */
-el("loginBtn").onclick = async ()=>{
-  await auth.signInWithEmailAndPassword(
-    el("email").value,
-    el("password").value
-  );
-};
-
+el("loginBtn").onclick = ()=>auth.signInWithEmailAndPassword(el("email").value, el("password").value);
 el("registerBtn").onclick = async ()=>{
-  const cred = await auth.createUserWithEmailAndPassword(
-    el("email").value,
-    el("password").value
-  );
-
+  const cred = await auth.createUserWithEmailAndPassword(el("email").value, el("password").value);
   await db.collection("users").doc(cred.user.uid).set({name:"User"});
 };
-
-el("guestBtn").onclick = ()=> auth.signInAnonymously();
+el("guestBtn").onclick = ()=>auth.signInAnonymously();
 
 /* STATE */
 auth.onAuthStateChanged(async u=>{
@@ -60,9 +49,7 @@ auth.onAuthStateChanged(async u=>{
 });
 
 /* SEND */
-el("sendBtn").onclick = sendMessage;
-
-async function sendMessage(){
+el("sendBtn").onclick = async ()=>{
   const text = el("msgInput").value.trim();
   if(!text) return;
 
@@ -76,53 +63,44 @@ async function sendMessage(){
   });
 
   el("msgInput").value="";
-}
+};
 
-/* LOAD (СТАБИЛЬНО) */
+/* LOAD */
 function loadMessages(){
-  db.collection("messages")
-    .orderBy("time")
-    .onSnapshot(snap=>{
-      const container = el("messages");
-      container.innerHTML = "";
+  db.collection("messages").orderBy("time")
+  .onSnapshot(snap=>{
+    const c = el("messages");
+    c.innerHTML="";
 
-      snap.forEach(doc=>{
-        const m = doc.data();
-        const id = doc.id;
+    snap.forEach(doc=>{
+      const m = doc.data();
+      const id = doc.id;
+      const isMe = m.uid===user.uid;
 
-        const isMe = m.uid === user.uid;
+      const d = document.createElement("div");
+      d.className="msg "+(isMe?"my":"other");
 
-        const div = document.createElement("div");
-        div.className = "msg " + (isMe ? "my":"other");
+      const colors = getUserColor(m.uid||m.name);
+      d.style.background=`linear-gradient(135deg,${colors.c1},${colors.c2})`;
 
-        const date = new Date(m.time);
-        const time =
-          date.getHours().toString().padStart(2,'0')+":"+
-          date.getMinutes().toString().padStart(2,'0');
+      d.innerHTML = `
+        <div class="name">${m.name}</div>
+        ${m.text}
+        <div class="meta">${new Date(m.time).toLocaleTimeString()}</div>
+      `;
 
-        const colors = getUserColor(m.uid || m.name);
-        div.style.background = `linear-gradient(135deg, ${colors.c1}, ${colors.c2})`;
-
-        div.innerHTML = `
-          <div class="name" style="color:${colors.c2}">
-            ${m.name}
-          </div>
-          ${m.text}
-          <div class="meta">${time}${isMe?" ✓✓":""}</div>
-        `;
-
-        /* КЛИК */
-        div.onclick = ()=>{
-          if(!isMe) return;
-          selectedMsgId = id;
-          el("menu").style.display="flex";
+      if(isMe){
+        d.onclick=()=>{
+          selectedMsgId=id;
+          el("menu").style.display="block";
         };
+      }
 
-        container.appendChild(div);
-      });
-
-      container.scrollTop = container.scrollHeight;
+      c.appendChild(d);
     });
+
+    c.scrollTop=c.scrollHeight;
+  });
 }
 
 /* MENU */
@@ -132,17 +110,10 @@ window.deleteMsg = async ()=>{
 };
 
 window.editMsg = async ()=>{
-  const text = prompt("Новое сообщение:");
-  if(!text) return;
-
-  await db.collection("messages").doc(selectedMsgId).update({
-    text
-  });
-
+  const t = prompt("Новое сообщение");
+  if(!t) return;
+  await db.collection("messages").doc(selectedMsgId).update({text:t});
   el("menu").style.display="none";
 };
-
-/* LOGOUT */
-el("logoutBtn").onclick = ()=> auth.signOut();
 
 };
