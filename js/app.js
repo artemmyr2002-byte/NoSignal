@@ -1,8 +1,12 @@
 let user = null;
 
-function el(id){ return document.getElementById(id); }
+function el(id){
+  return document.getElementById(id);
+}
 
 /* ===== AUTH ===== */
+
+window.onload = function(){
 
 el("loginBtn").onclick = async ()=>{
   try{
@@ -90,4 +94,6 @@ el("saveName").onclick = async ()=>{
 
 el("logoutBtn").onclick = ()=>{
   auth.signOut();
+};
+
 };
