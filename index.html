@@ -46,21 +46,21 @@
     <div id="messages" class="messages"></div>
 
     <div class="inputBar">
-      <input id="msgInput">
+      <input id="msgInput" placeholder="Сообщение...">
       <button onclick="sendMsg()">➤</button>
     </div>
 
   </div>
 </div>
 
-<!-- профиль -->
+<!-- ПРОФИЛЬ -->
 <div id="profileModal" class="modal hidden">
   <div class="modalBox">
     <h3>Профиль</h3>
 
     <img id="avatar">
 
-    <input id="profileName">
+    <input id="profileName" placeholder="Имя">
 
     <div class="avatars">
       <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" onclick="pickAvatar(this.src)">
@@ -68,7 +68,7 @@
       <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" onclick="pickAvatar(this.src)">
     </div>
 
-    <button onclick="saveProfile()">сохранить</button>
+    <button onclick="saveProfile()">Сохранить</button>
     <button onclick="closeProfile()">✕</button>
   </div>
 </div>
