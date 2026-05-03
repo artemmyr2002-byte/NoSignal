@@ -1,27 +1,67 @@
-/* закрытие по кнопке */
-window.closeModal = function(id){
-  document.getElementById(id).classList.add("hidden");
+const firebaseConfig = {
+  apiKey: "AIzaSyBo9z598gFXbx9pH9zLGS4Uncx0hDg",
+  authDomain: "voidlauncher-bab33.firebaseapp.com",
+  projectId: "voidlauncher-bab33",
+  storageBucket: "voidlauncher-bab33.firebasestorage.app",
+  messagingSenderId: "273997309805",
+  appId: "1:273997309805:web:a43ce719cb30fcf9dc9c64"
 };
 
-/* открыть */
-window.openModal = function(id){
-  document.getElementById(id).classList.remove("hidden");
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+/* простой пользователь */
+const username = "User_" + Math.floor(Math.random()*10000);
+
+/* отправка */
+window.sendMsg = async function(){
+
+  const input = document.getElementById("msgInput");
+  const text = input.value.trim();
+
+  if(!text) return;
+
+  try{
+    await db.collection("messages").add({
+      text,
+      user: username,
+      time: Date.now()
+    });
+  }catch(e){
+    console.log("send error", e);
+  }
+
+  input.value="";
 };
 
-/* клик вне окна */
-document.addEventListener("click", e=>{
-  document.querySelectorAll(".modal").forEach(modal=>{
-    if(e.target === modal){
-      modal.classList.add("hidden");
-    }
-  });
+/* enter */
+document.getElementById("msgInput").addEventListener("keydown", e=>{
+  if(e.key==="Enter") sendMsg();
 });
 
-/* ESC закрытие */
-document.addEventListener("keydown", e=>{
-  if(e.key === "Escape"){
-    document.querySelectorAll(".modal").forEach(m=>{
-      m.classList.add("hidden");
-    });
-  }
+/* загрузка */
+db.collection("messages")
+.orderBy("time")
+.onSnapshot(snap=>{
+
+  const box = document.getElementById("messages");
+  box.innerHTML="";
+
+  snap.forEach(doc=>{
+
+    const m = doc.data();
+    const isMe = m.user === username;
+
+    box.innerHTML += `
+      <div class="msg ${isMe ? "right" : ""}">
+        <div class="bubble ${isMe ? "gradient" : "orange"}">
+          ${m.text}
+        </div>
+      </div>
+    `;
+  });
+
+  box.scrollTop = box.scrollHeight;
+
 });
