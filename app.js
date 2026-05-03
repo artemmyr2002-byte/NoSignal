@@ -12,17 +12,39 @@ const db = firebase.firestore();
 let me = null;
 let currentChat = null;
 
-/* AUTH */
+/* ================= AUTH ================= */
 
+/* GOOGLE (REDIRECT — НАДЁЖНЫЙ) */
 window.googleLogin = async ()=>{
-  const provider = new firebase.auth.GoogleAuthProvider();
-  await auth.signInWithPopup(provider);
+  try{
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithRedirect(provider);
+  }catch(e){
+    alert("Google ошибка: " + e.message);
+  }
 };
 
+/* ГОСТЬ */
 window.guestLogin = async ()=>{
-  await auth.signInAnonymously();
+  try{
+    await auth.signInAnonymously();
+  }catch(e){
+    alert("Гость ошибка: " + e.message);
+  }
 };
 
+/* ВОЗВРАТ ПОСЛЕ GOOGLE */
+auth.getRedirectResult()
+.then(result=>{
+  if(result.user){
+    console.log("Google login success");
+  }
+})
+.catch(e=>{
+  alert("Redirect error: " + e.message);
+});
+
+/* СОСТОЯНИЕ ПОЛЬЗОВАТЕЛЯ */
 auth.onAuthStateChanged(async user=>{
 
   if(!user) return;
@@ -32,6 +54,7 @@ auth.onAuthStateChanged(async user=>{
   document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
 
+  /* сохраняем пользователя */
   await db.collection("users").doc(me.uid).set({
     name: user.displayName || "Guest",
     last: Date.now()
@@ -40,20 +63,22 @@ auth.onAuthStateChanged(async user=>{
   loadChats();
 });
 
-/* CREATE CHAT */
+/* ================= CHATS ================= */
 
 window.createChat = async ()=>{
-  const chat = await db.collection("chats").add({
+  if(!me) return;
+
+  await db.collection("chats").add({
     users:[me.uid],
-    name:"Чат"
+    name:"Чат " + Math.floor(Math.random()*1000),
+    created: Date.now()
   });
 };
-
-/* LOAD CHATS */
 
 function loadChats(){
 
   db.collection("chats")
+  .orderBy("created","desc")
   .onSnapshot(snap=>{
 
     chatList.innerHTML="";
@@ -63,6 +88,10 @@ function loadChats(){
       const c = doc.data();
 
       const el = document.createElement("div");
+      el.style.padding="10px";
+      el.style.cursor="pointer";
+      el.style.borderBottom="1px solid #222";
+
       el.innerText = c.name;
 
       el.onclick = ()=>{
@@ -77,7 +106,7 @@ function loadChats(){
 
 }
 
-/* OPEN CHAT */
+/* ================= OPEN CHAT ================= */
 
 function openChat(id,name){
 
@@ -109,11 +138,13 @@ function openChat(id,name){
 
       });
 
+      messages.scrollTop = messages.scrollHeight;
+
     });
 
 }
 
-/* SEND */
+/* ================= SEND ================= */
 
 window.sendMsg = async ()=>{
 
@@ -122,19 +153,25 @@ window.sendMsg = async ()=>{
   const text = msgInput.value.trim();
   if(!text) return;
 
-  await db.collection("messages")
-    .doc(currentChat)
-    .collection("items")
-    .add({
-      text,
-      uid: me.uid,
-      time: Date.now()
-    });
+  try{
+
+    await db.collection("messages")
+      .doc(currentChat)
+      .collection("items")
+      .add({
+        text,
+        uid: me.uid,
+        time: Date.now()
+      });
+
+  }catch(e){
+    alert("Ошибка отправки: " + e.message);
+  }
 
   msgInput.value="";
 };
 
-/* LOGOUT */
+/* ================= LOGOUT ================= */
 
 window.logout = ()=>{
   auth.signOut();
