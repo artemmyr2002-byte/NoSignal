@@ -5,9 +5,7 @@ body{
   color:white;
 }
 
-.hidden{
-  display:none !important;
-}
+.hidden{ display:none !important; }
 
 /* AUTH */
 .screen{
@@ -26,6 +24,7 @@ input{
   width:260px;
   background:#1f2c34;
   color:white;
+  outline:none;
 }
 
 button{
@@ -44,7 +43,7 @@ button{
   flex-direction:column;
 }
 
-/* 🔥 ЛИПКАЯ ВЕРХНЯЯ ПАНЕЛЬ */
+/* 🔥 ВЕРХ ФИКС */
 .top{
   position:sticky;
   top:0;
@@ -67,50 +66,62 @@ button{
   height:100%;
 }
 
+/* 🔥 УБРАЛ ПОЛОСКИ */
 #messages{
   flex:1;
   overflow-y:auto;
   padding:6px 8px;
   display:flex;
   flex-direction:column;
+
+  scrollbar-width:none;
+}
+#messages::-webkit-scrollbar{
+  display:none;
 }
 
-/* MESSAGE BASE */
+/* MESSAGE */
 .msg{
   max-width:75%;
   padding:8px 10px;
   margin:2px 0;
   border-radius:12px;
-  word-wrap:break-word;
   font-size:14px;
-  position:relative;
 }
 
-/* МОИ (справа) */
+/* МОИ */
 .my{
   align-self:flex-end;
-  background:linear-gradient(135deg, #005c4b, #008069);
+  background:linear-gradient(135deg,#005c4b,#008069);
 }
 
-/* ЧУЖИЕ (переливающиеся) */
+/* ЧУЖИЕ (КРАСИВЫЙ ГРАДИЕНТ) */
 .other{
   align-self:flex-start;
-
-  background:linear-gradient(270deg, #2a3942, #3a4f5a, #2a3942);
-  background-size:600% 600%;
-
-  animation:gradientMove 6s ease infinite;
+  background:linear-gradient(135deg,#1f2c34,#2a3942);
 }
 
-/* АНИМАЦИЯ */
-@keyframes gradientMove {
-  0%{ background-position:0% 50% }
-  50%{ background-position:100% 50% }
-  100%{ background-position:0% 50% }
+/* ИМЯ */
+.name{
+  font-size:12px;
+  opacity:0.7;
+  margin-bottom:2px;
 }
 
-/* SEND */
+/* ВРЕМЯ + ГАЛОЧКИ */
+.meta{
+  font-size:11px;
+  opacity:0.6;
+  margin-top:4px;
+  text-align:right;
+}
+
+/* 🔥 НИЖНЯЯ ПАНЕЛЬ ФИКС */
 .send{
+  position:sticky;
+  bottom:0;
+  z-index:100;
+
   display:flex;
   padding:10px;
   background:#202c33;
@@ -119,14 +130,6 @@ button{
 .send input{
   flex:1;
   margin-right:10px;
-}
-
-/* ВРЕМЯ */
-.time{
-  font-size:11px;
-  opacity:0.6;
-  margin-top:4px;
-  text-align:right;
 }
 
 /* PROFILE */
