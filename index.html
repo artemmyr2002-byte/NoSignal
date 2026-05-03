@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NeonSpace</title>
+<title>NeonSpace Chat</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -16,20 +16,23 @@
 
 <body>
 
+<div class="bg"></div>
+
 <div class="app">
 
   <div class="sidebar">
 
     <div id="profile"></div>
 
-    <button onclick="googleLogin()">🔵 Login Google</button>
+    <button onclick="googleLogin()">Google login</button>
+    <button onclick="anonymousLogin()">Guest</button>
 
-    <div class="section-title">Servers</div>
+    <h4>Servers</h4>
     <div id="servers"></div>
 
-    <button onclick="createServer()">+ Create server</button>
+    <button onclick="createServer()">+ server</button>
 
-    <div class="section-title">Users</div>
+    <h4>Users</h4>
     <div id="users"></div>
 
   </div>
@@ -38,7 +41,7 @@
 
     <div id="messages"></div>
 
-    <input id="msgInput" placeholder="Message...">
+    <input id="msgInput" placeholder="message...">
 
   </div>
 
