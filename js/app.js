@@ -217,3 +217,4 @@ function loadMessages(){
     c.scrollTop=c.scrollHeight;
   });
 }
+};
