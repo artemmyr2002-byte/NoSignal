@@ -4,6 +4,7 @@ function el(id){ return document.getElementById(id); }
 
 window.onload = function(){
 
+/* гарантированно скрываем профиль */
 el("profile").style.display = "none";
 
 /* ===== AUTH ===== */
@@ -110,12 +111,14 @@ async function sendMessage(){
   await db.collection("messages").add({
     text,
     name,
-    uid: user.uid,
+    uid: user.uid, // теперь всегда сохраняем
     time: Date.now()
   });
 
   el("msgInput").value = "";
 }
+
+/* ===== LOAD MESSAGES (ФИКС СТАРЫХ + НОВЫХ) ===== */
 
 function loadMessages(){
   db.collection("messages")
@@ -129,7 +132,11 @@ function loadMessages(){
         const div = document.createElement("div");
         div.className = "msg";
 
-        if(m.uid === user.uid){
+        // 🔥 ГЛАВНЫЙ ФИКС
+        if(
+          (m.uid && m.uid === user.uid) ||
+          (!m.uid && m.name === el("name").innerText)
+        ){
           div.classList.add("my");
         }else{
           div.classList.add("other");
