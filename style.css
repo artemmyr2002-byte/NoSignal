@@ -34,7 +34,7 @@ button{
   cursor:pointer;
 }
 
-/* панель */
+/* ПАНЕЛЬ ВСЕГДА СВЕРХУ */
 .top{
   position:fixed;
   top:0;
@@ -51,7 +51,7 @@ button{
   background:#202c33;
 }
 
-/* чат */
+/* ЧАТ */
 #chat{
   height:100vh;
   display:flex;
@@ -67,7 +67,7 @@ button{
   flex-direction:column;
 }
 
-/* сообщения */
+/* СООБЩЕНИЯ */
 .msg{
   position:relative;
   max-width:75%;
@@ -85,7 +85,7 @@ button{
   text-align:right;
 }
 
-/* 🔥 МЕНЮ У СООБЩЕНИЯ */
+/* МЕНЮ */
 .msg-menu{
   position:absolute;
   top:-35px;
@@ -100,7 +100,7 @@ button{
   background:#111;
 }
 
-/* ввод */
+/* ВВОД */
 .send{
   display:flex;
   padding:10px;
