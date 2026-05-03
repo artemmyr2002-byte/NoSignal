@@ -16,7 +16,6 @@ body{
   gap:12px;
 }
 
-/* INPUT + BUTTON */
 input{
   padding:12px;
   border:none;
@@ -37,23 +36,19 @@ button{
 
 /* APP */
 #app{
-  height:100vh;
+  min-height:100vh;
   display:flex;
   flex-direction:column;
 }
 
-/* 🔥 FIX ПАНЕЛИ */
+/* 🔥 ПАНЕЛЬ ТЕПЕРЬ НЕ ЛИПНЕТ */
 .top{
-  position:sticky;
-  top:0;
-  z-index:100;
   width:100%;
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:14px 16px;
   background:#202c33;
-  box-sizing:border-box;
 }
 
 .top-buttons{
@@ -93,7 +88,6 @@ button{
 
 .name{
   font-size:12px;
-  margin-bottom:2px;
 }
 
 .meta{
