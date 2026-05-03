@@ -1,3 +1,5 @@
+document.addEventListener("DOMContentLoaded", ()=>{
+
 const firebaseConfig = {
   apiKey: "AIzaSyDVbJwMeX0FTZfC7NH5ghQxEh1eRxvMxto",
   authDomain: "voidlauncher-bab33.firebaseapp.com",
@@ -11,14 +13,22 @@ const db = firebase.firestore();
 
 let currentUser = null;
 
-/* helpers */
 const el = id => document.getElementById(id);
-const defaultAvatar = (uid) =>
+
+function safe(id){
+  const e = el(id);
+  if(!e){
+    console.error("НЕТ ЭЛЕМЕНТА:", id);
+  }
+  return e;
+}
+
+const defaultAvatar = uid =>
   "https://api.dicebear.com/7.x/identicon/svg?seed=" + uid;
 
-/* ================= AUTH ================= */
+/* AUTH */
 
-el("loginBtn").onclick = async ()=>{
+safe("loginBtn")?.addEventListener("click", async ()=>{
   try{
     await auth.signInWithEmailAndPassword(
       el("email").value,
@@ -27,9 +37,9 @@ el("loginBtn").onclick = async ()=>{
   }catch(e){
     el("authError").innerText = e.message;
   }
-};
+});
 
-el("registerBtn").onclick = async ()=>{
+safe("registerBtn")?.addEventListener("click", async ()=>{
   try{
     const cred = await auth.createUserWithEmailAndPassword(
       el("email").value,
@@ -44,26 +54,26 @@ el("registerBtn").onclick = async ()=>{
   }catch(e){
     el("authError").innerText = e.message;
   }
-};
+});
 
-el("guestBtn").onclick = async ()=>{
+safe("guestBtn")?.addEventListener("click", async ()=>{
   await auth.signInAnonymously();
-};
+});
 
-/* ================= STATE ================= */
+/* STATE */
 
 auth.onAuthStateChanged(async user=>{
   if(!user){
     currentUser = null;
-    el("auth").classList.remove("hidden");
-    el("app").classList.add("hidden");
+    safe("auth")?.classList.remove("hidden");
+    safe("app")?.classList.add("hidden");
     return;
   }
 
   currentUser = user;
 
-  el("auth").classList.add("hidden");
-  el("app").classList.remove("hidden");
+  safe("auth")?.classList.add("hidden");
+  safe("app")?.classList.remove("hidden");
 
   const ref = db.collection("users").doc(user.uid);
   const doc = await ref.get();
@@ -76,27 +86,29 @@ auth.onAuthStateChanged(async user=>{
   }
 
   const data = (await ref.get()).data();
-
-  el("userName").innerText = data.name;
+  safe("userName").innerText = data.name;
 });
 
-/* ================= PROFILE ================= */
+/* PROFILE */
 
-el("profileBtn").onclick = async ()=>{
+safe("profileBtn")?.addEventListener("click", async ()=>{
+  if(!currentUser) return;
+
   const ref = db.collection("users").doc(currentUser.uid);
   const data = (await ref.get()).data();
 
-  el("profileModal").classList.remove("hidden");
+  safe("profileModal").classList.remove("hidden");
+  safe("nameInput").value = data.name;
+  safe("avatar").src = data.avatar;
+});
 
-  el("nameInput").value = data.name;
-  el("avatar").src = data.avatar;
-};
+safe("closeProfile")?.addEventListener("click", ()=>{
+  safe("profileModal").classList.add("hidden");
+});
 
-el("closeProfile").onclick = ()=>{
-  el("profileModal").classList.add("hidden");
-};
+safe("saveProfile")?.addEventListener("click", async ()=>{
+  if(!currentUser) return alert("Не вошёл");
 
-el("saveProfile").onclick = async ()=>{
   const name = el("nameInput").value.trim();
   if(!name) return alert("Введите имя");
 
@@ -104,10 +116,14 @@ el("saveProfile").onclick = async ()=>{
     name
   });
 
-  el("profileModal").classList.add("hidden");
-  el("userName").innerText = name;
-};
+  safe("profileModal").classList.add("hidden");
+  safe("userName").innerText = name;
+});
 
-/* ================= LOGOUT ================= */
+/* LOGOUT */
 
-el("logoutBtn").onclick = ()=>auth.signOut();
+safe("logoutBtn")?.addEventListener("click", ()=>{
+  auth.signOut();
+});
+
+});
