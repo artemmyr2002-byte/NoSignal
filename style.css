@@ -1,19 +1,35 @@
 body{
   margin:0;
-  font-family:Arial;
-  background:#0f1220;
+  font-family:sans-serif;
+  background:linear-gradient(135deg,#0f1220,#1a1f3c);
   color:white;
 }
 
+/* CENTER */
 .center{
   height:100vh;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  gap:10px;
+  gap:15px;
 }
 
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#7b2ff7,#f107a3);
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+
+/* APP */
 .app{
   display:flex;
   height:100vh;
@@ -21,12 +37,34 @@ body{
 
 .hidden{display:none;}
 
+/* SIDEBAR */
 .sidebar{
   width:260px;
-  background:#111427;
+  background:rgba(20,20,40,0.6);
+  backdrop-filter:blur(20px);
   padding:10px;
+  display:flex;
+  flex-direction:column;
 }
 
+.logo{
+  font-size:20px;
+  margin-bottom:10px;
+}
+
+#chatList div{
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:5px;
+  transition:0.2s;
+}
+
+#chatList div:hover{
+  background:rgba(255,255,255,0.1);
+}
+
+/* CHAT */
 .chat{
   flex:1;
   display:flex;
@@ -35,34 +73,58 @@ body{
 
 .topbar{
   padding:10px;
-  background:#141735;
+  background:rgba(20,20,40,0.6);
+  backdrop-filter:blur(20px);
   display:flex;
   justify-content:space-between;
 }
 
+/* MESSAGES */
 .messages{
   flex:1;
   overflow:auto;
   padding:10px;
 }
 
-.msg{margin:5px 0;}
-.me{text-align:right;}
+.msg{
+  margin:8px 0;
+  animation:fade 0.2s ease;
+}
+
+@keyframes fade{
+  from{opacity:0; transform:translateY(5px);}
+  to{opacity:1;}
+}
+
+.me{
+  text-align:right;
+}
 
 .bubble{
   display:inline-block;
-  padding:10px;
-  border-radius:10px;
+  padding:10px 14px;
+  border-radius:12px;
+  max-width:70%;
 }
 
-.me .bubble{background:#a100ff;}
-.other .bubble{background:#333;}
+.me .bubble{
+  background:linear-gradient(45deg,#7b2ff7,#f107a3);
+}
 
+.other .bubble{
+  background:rgba(255,255,255,0.1);
+}
+
+/* INPUT */
 .inputBar{
   display:flex;
+  gap:5px;
   padding:10px;
 }
+
 input{
   flex:1;
   padding:10px;
+  border:none;
+  border-radius:10px;
 }
