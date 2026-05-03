@@ -1,7 +1,7 @@
 const firebaseConfig = {
-  apiKey: "AIzaSyBo9z598gFXbx9pH9zLGS4Uncx0hDg",
+  apiKey: "AIzaSyDVbJwMeX0FTZfC7NH5ghQxEh1eRxvMxto",
   authDomain: "voidlauncher-bab33.firebaseapp.com",
-  projectId: "voidlauncher-bab33"
+  projectId: "voidlauncher-bab33",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -12,71 +12,45 @@ const db = firebase.firestore();
 let me = null;
 let currentChat = null;
 
-/* ================= AUTH ================= */
+/* AUTH */
 
-/* GOOGLE (REDIRECT — НАДЁЖНЫЙ) */
 window.googleLogin = async ()=>{
-  try{
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithRedirect(provider);
-  }catch(e){
-    alert("Google ошибка: " + e.message);
-  }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  await auth.signInWithRedirect(provider);
 };
 
-/* ГОСТЬ */
 window.guestLogin = async ()=>{
-  try{
-    await auth.signInAnonymously();
-  }catch(e){
-    alert("Гость ошибка: " + e.message);
-  }
+  await auth.signInAnonymously();
 };
 
-/* ВОЗВРАТ ПОСЛЕ GOOGLE */
-auth.getRedirectResult()
-.then(result=>{
-  if(result.user){
-    console.log("Google login success");
-  }
-})
-.catch(e=>{
-  alert("Redirect error: " + e.message);
-});
+auth.getRedirectResult();
 
-/* СОСТОЯНИЕ ПОЛЬЗОВАТЕЛЯ */
 auth.onAuthStateChanged(async user=>{
-
   if(!user) return;
 
   me = user;
 
-  document.getElementById("authScreen").classList.add("hidden");
+  document.getElementById("auth").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
 
-  /* сохраняем пользователя */
   await db.collection("users").doc(me.uid).set({
     name: user.displayName || "Guest",
-    last: Date.now()
   },{merge:true});
 
   loadChats();
 });
 
-/* ================= CHATS ================= */
+/* CHATS */
 
 window.createChat = async ()=>{
-  if(!me) return;
-
   await db.collection("chats").add({
+    name:"Чат",
     users:[me.uid],
-    name:"Чат " + Math.floor(Math.random()*1000),
-    created: Date.now()
+    created:Date.now()
   });
 };
 
 function loadChats(){
-
   db.collection("chats")
   .orderBy("created","desc")
   .onSnapshot(snap=>{
@@ -84,14 +58,9 @@ function loadChats(){
     chatList.innerHTML="";
 
     snap.forEach(doc=>{
-
       const c = doc.data();
 
       const el = document.createElement("div");
-      el.style.padding="10px";
-      el.style.cursor="pointer";
-      el.style.borderBottom="1px solid #222";
-
       el.innerText = c.name;
 
       el.onclick = ()=>{
@@ -99,14 +68,11 @@ function loadChats(){
       };
 
       chatList.appendChild(el);
-
     });
-
   });
-
 }
 
-/* ================= OPEN CHAT ================= */
+/* OPEN CHAT */
 
 function openChat(id,name){
 
@@ -122,56 +88,42 @@ function openChat(id,name){
       messages.innerHTML="";
 
       snap.forEach(d=>{
-
         const m = d.data();
 
         const div = document.createElement("div");
         div.className = "msg " + (m.uid===me.uid?"me":"other");
 
-        div.innerHTML = `
-          <div class="bubble">
-            ${m.text}
-          </div>
-        `;
+        div.innerHTML = `<div class="bubble">${m.text}</div>`;
 
         messages.appendChild(div);
-
       });
 
       messages.scrollTop = messages.scrollHeight;
 
     });
-
 }
 
-/* ================= SEND ================= */
+/* SEND */
 
 window.sendMsg = async ()=>{
-
   if(!currentChat) return;
 
   const text = msgInput.value.trim();
   if(!text) return;
 
-  try{
-
-    await db.collection("messages")
-      .doc(currentChat)
-      .collection("items")
-      .add({
-        text,
-        uid: me.uid,
-        time: Date.now()
-      });
-
-  }catch(e){
-    alert("Ошибка отправки: " + e.message);
-  }
+  await db.collection("messages")
+    .doc(currentChat)
+    .collection("items")
+    .add({
+      text,
+      uid: me.uid,
+      time: Date.now()
+    });
 
   msgInput.value="";
 };
 
-/* ================= LOGOUT ================= */
+/* LOGOUT */
 
 window.logout = ()=>{
   auth.signOut();
