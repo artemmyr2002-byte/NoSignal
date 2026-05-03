@@ -1,18 +1,33 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBo9z598gFXbx9pH9zLGS4Uncx0hDg",
   authDomain: "voidlauncher-bab33.firebaseapp.com",
-  projectId: "voidlauncher-bab33",
-  storageBucket: "voidlauncher-bab33.firebasestorage.app",
-  messagingSenderId: "273997309805",
-  appId: "1:273997309805:web:a43ce719cb30fcf9dc9c64"
+  projectId: "voidlauncher-bab33"
 };
 
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.firestore();
 
-/* простой пользователь */
-const username = "User_" + Math.floor(Math.random()*10000);
+let username = null;
+
+/* старт */
+window.startChat = function(){
+
+  const name = document.getElementById("nameInput").value.trim();
+
+  if(!name){
+    alert("Введите имя");
+    return;
+  }
+
+  username = name;
+
+  document.getElementById("nameModal").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  loadMessages();
+
+};
 
 /* отправка */
 window.sendMsg = async function(){
@@ -20,14 +35,16 @@ window.sendMsg = async function(){
   const input = document.getElementById("msgInput");
   const text = input.value.trim();
 
-  if(!text) return;
+  if(!text || !username) return;
 
   try{
+
     await db.collection("messages").add({
       text,
       user: username,
       time: Date.now()
     });
+
   }catch(e){
     console.log("send error", e);
   }
@@ -41,27 +58,33 @@ document.getElementById("msgInput").addEventListener("keydown", e=>{
 });
 
 /* загрузка */
-db.collection("messages")
-.orderBy("time")
-.onSnapshot(snap=>{
+function loadMessages(){
 
-  const box = document.getElementById("messages");
-  box.innerHTML="";
+  db.collection("messages")
+  .orderBy("time")
+  .onSnapshot(snap=>{
 
-  snap.forEach(doc=>{
+    const box = document.getElementById("messages");
+    box.innerHTML="";
 
-    const m = doc.data();
-    const isMe = m.user === username;
+    snap.forEach(doc=>{
 
-    box.innerHTML += `
-      <div class="msg ${isMe ? "right" : ""}">
-        <div class="bubble ${isMe ? "gradient" : "orange"}">
-          ${m.text}
+      const m = doc.data();
+      const isMe = m.user === username;
+
+      box.innerHTML += `
+        <div class="msg ${isMe ? "right" : ""}">
+          <div class="bubble ${isMe ? "gradient" : "orange"}">
+            <b>${m.user}</b><br>
+            ${m.text}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+
+    });
+
+    box.scrollTop = box.scrollHeight;
+
   });
 
-  box.scrollTop = box.scrollHeight;
-
-});
+}
