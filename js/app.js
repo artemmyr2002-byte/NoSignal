@@ -30,6 +30,7 @@ el("registerBtn").onclick=async ()=>{
 
 el("guestBtn").onclick=()=>auth.signInAnonymously();
 
+/* ВАЖНО — УБРАЛИ name */
 auth.onAuthStateChanged(async u=>{
   if(!u){
     el("auth").classList.remove("hidden");
@@ -38,6 +39,7 @@ auth.onAuthStateChanged(async u=>{
   }
 
   user=u;
+
   el("auth").classList.add("hidden");
   el("app").classList.remove("hidden");
 
@@ -48,7 +50,7 @@ auth.onAuthStateChanged(async u=>{
   },200);
 });
 
-/* отправка */
+/* ОТПРАВКА */
 el("sendBtn").onclick=async ()=>{
   const text=el("msgInput").value.trim();
   if(!text) return;
@@ -62,11 +64,14 @@ el("sendBtn").onclick=async ()=>{
   el("msgInput").value="";
 };
 
-/* загрузка */
+/* ЗАГРУЗКА */
 function loadMessages(){
   db.collection("messages").orderBy("time")
   .onSnapshot(snap=>{
     const c=el("messages");
+
+    const atBottom=c.scrollHeight-c.scrollTop<=c.clientHeight+50;
+
     c.innerHTML="";
 
     snap.forEach(doc=>{
@@ -81,7 +86,6 @@ function loadMessages(){
         <div class="meta">${new Date(m.time).toLocaleTimeString()}</div>
       `;
 
-      /* 🔥 меню */
       if(m.uid===user.uid){
         const menu=document.createElement("div");
         menu.className="msg-menu";
@@ -105,7 +109,6 @@ function loadMessages(){
 
         menu.appendChild(edit);
         menu.appendChild(del);
-
         d.appendChild(menu);
 
         d.onclick=(e)=>{
@@ -123,9 +126,11 @@ function loadMessages(){
       c.appendChild(d);
     });
 
-    setTimeout(()=>{
-      c.scrollTop=c.scrollHeight;
-    },50);
+    if(atBottom){
+      setTimeout(()=>{
+        c.scrollTop=c.scrollHeight;
+      },50);
+    }
   });
 }
 
