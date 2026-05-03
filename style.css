@@ -41,13 +41,33 @@ button{
   height:100vh;
   display:flex;
   flex-direction:column;
+  align-items:center; /* 🔥 центрируем */
 }
 
-/* 🔥 ВЕРХ ФИКС */
+/* 🔥 КОНТЕЙНЕР ЧАТА */
+#chat{
+  width:100%;
+  max-width:900px; /* мобилка */
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* 🔥 ПК ВЕРСИЯ (+25% ширины) */
+@media (min-width: 768px){
+  #chat{
+    max-width:1200px; /* было ~900 → стало больше */
+  }
+}
+
+/* TOP */
 .top{
   position:sticky;
   top:0;
   z-index:100;
+
+  width:100%;
+  max-width:inherit;
 
   display:flex;
   justify-content:space-between;
@@ -58,15 +78,7 @@ button{
   border-bottom:1px solid #2a3942;
 }
 
-/* CHAT */
-#chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-
-/* 🔥 УБРАЛ ПОЛОСКИ */
+/* CHAT MESSAGES */
 #messages{
   flex:1;
   overflow-y:auto;
@@ -95,20 +107,19 @@ button{
   background:linear-gradient(135deg,#005c4b,#008069);
 }
 
-/* ЧУЖИЕ (КРАСИВЫЙ ГРАДИЕНТ) */
+/* ЧУЖИЕ */
 .other{
   align-self:flex-start;
-  background:linear-gradient(135deg,#1f2c34,#2a3942);
 }
 
 /* ИМЯ */
 .name{
   font-size:12px;
-  opacity:0.7;
   margin-bottom:2px;
+  font-weight:bold;
 }
 
-/* ВРЕМЯ + ГАЛОЧКИ */
+/* ВРЕМЯ */
 .meta{
   font-size:11px;
   opacity:0.6;
@@ -116,7 +127,7 @@ button{
   text-align:right;
 }
 
-/* 🔥 НИЖНЯЯ ПАНЕЛЬ ФИКС */
+/* SEND */
 .send{
   position:sticky;
   bottom:0;
