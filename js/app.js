@@ -1,46 +1,61 @@
 let user=null;
-let openedMenu=null;
+let userData={};
+
+let editingId=null; // 🔥 редактируемое сообщение
 
 function el(id){return document.getElementById(id);}
 
-/* 🔥 ГРАДИЕНТ */
-function getUserGradient(uid){
-  if(!uid) uid="x";
-
-  let hash=0;
-  for(let i=0;i<uid.length;i++){
-    hash=uid.charCodeAt(i)+((hash<<5)-hash);
-  }
-
-  const h=Math.abs(hash%360);
-
-  return `linear-gradient(135deg, hsl(${h},70%,45%), hsl(${(h+40)%360},70%,55%))`;
+/* base64 */
+function toBase64(file){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result);
+    r.readAsDataURL(file);
+  });
 }
 
 window.onload=function(){
-
-/* закрытие меню */
-document.body.onclick=()=>{
-  if(openedMenu){
-    openedMenu.style.display="none";
-    openedMenu=null;
-  }
-};
-
-/* 🔥 ВЫХОД */
-el("logoutBtn").onclick=()=>{
-  auth.signOut();
-};
 
 /* AUTH */
 el("loginBtn").onclick=()=>auth.signInWithEmailAndPassword(el("email").value,el("password").value);
 
 el("registerBtn").onclick=async ()=>{
   const c=await auth.createUserWithEmailAndPassword(el("email").value,el("password").value);
-  await db.collection("users").doc(c.user.uid).set({name:"User"});
+  await db.collection("users").doc(c.user.uid).set({
+    name:"User",
+    avatar:""
+  });
 };
 
 el("guestBtn").onclick=()=>auth.signInAnonymously();
+
+el("logoutBtn").onclick=()=>auth.signOut();
+
+/* PROFILE */
+el("profileBtn").onclick=()=>{
+  el("profile").classList.remove("hidden");
+};
+
+el("saveProfile").onclick=async ()=>{
+  const name=el("nameInput").value;
+  const file=el("avatarInput").files[0];
+
+  let avatar=userData.avatar || "";
+
+  if(file){
+    avatar=await toBase64(file);
+  }
+
+  await db.collection("users").doc(user.uid).set({
+    name,
+    avatar
+  });
+
+  userData.name=name;
+  userData.avatar=avatar;
+
+  el("profile").classList.add("hidden");
+};
 
 /* STATE */
 auth.onAuthStateChanged(async u=>{
@@ -51,47 +66,72 @@ auth.onAuthStateChanged(async u=>{
   }
 
   user=u;
-
   el("auth").classList.add("hidden");
   el("app").classList.remove("hidden");
 
-  loadMessages();
+  const ref=db.collection("users").doc(user.uid);
+  if(!(await ref.get()).exists){
+    await ref.set({name:"User",avatar:""});
+  }
 
-  /* 🔥 СРАЗУ ВНИЗ */
-  setTimeout(()=>{
-    const c=el("messages");
-    c.scrollTop=c.scrollHeight;
-  },200);
+  userData=(await ref.get()).data();
+
+  loadMessages();
 });
 
-/* ОТПРАВКА */
+/* 🔥 ОТПРАВКА / РЕДАКТИРОВАНИЕ */
 el("sendBtn").onclick=async ()=>{
+
   const text=el("msgInput").value.trim();
-  if(!text) return;
+  const file=el("fileInput").files[0];
+
+  if(!text && !file) return;
+
+  /* 🔥 ЕСЛИ РЕДАКТИРУЕМ */
+  if(editingId){
+    await db.collection("messages").doc(editingId).update({
+      text,
+      edited:true
+    });
+
+    editingId=null;
+    el("sendBtn").innerText="➤";
+    el("msgInput").value="";
+    return;
+  }
+
+  /* обычная отправка */
+  let fileData="";
+  if(file){
+    fileData=await toBase64(file);
+  }
 
   await db.collection("messages").add({
     text,
+    file:fileData,
     uid:user.uid,
-    time:Date.now()
+    name:userData.name,
+    avatar:userData.avatar,
+    time:Date.now(),
+    edited:false
   });
 
   el("msgInput").value="";
-
-  /* 🔥 ВНИЗ ПОСЛЕ ОТПРАВКИ */
-  const c=el("messages");
-  setTimeout(()=>{
-    c.scrollTop=c.scrollHeight;
-  },50);
+  el("fileInput").value="";
 };
 
-/* ЗАГРУЗКА */
+/* 🔥 НАЧАТЬ РЕДАКТИРОВАНИЕ */
+function startEdit(id, text){
+  editingId=id;
+  el("msgInput").value=text;
+  el("sendBtn").innerText="Сохранить";
+}
+
+/* LOAD */
 function loadMessages(){
   db.collection("messages").orderBy("time")
   .onSnapshot(snap=>{
     const c=el("messages");
-
-    const atBottom=c.scrollHeight-c.scrollTop<=c.clientHeight+80;
-
     c.innerHTML="";
 
     snap.forEach(doc=>{
@@ -101,62 +141,53 @@ function loadMessages(){
       const isMe = m.uid===user.uid;
 
       d.className="msg "+(isMe?"my":"other");
-
-      /* 🔥 ГРАДИЕНТ */
-      d.style.background = getUserGradient(m.uid);
+      d.style.background="linear-gradient(135deg,#00a884,#008069)";
 
       d.innerHTML=`
-        ${m.text}
-        <div class="meta">${new Date(m.time).toLocaleTimeString()} ${isMe?"✓✓":""}</div>
+        <div class="name">${m.name||"User"}</div>
+
+        ${m.avatar?`<img src="${m.avatar}" width="30">`:""}
+
+        <div>${m.text||""}</div>
+
+        ${m.file?`<a href="${m.file}" target="_blank">📎 файл</a>`:""}
+
+        <div class="meta">
+          ${new Date(m.time).toLocaleTimeString()}
+          ${m.edited?"(изменено)":""}
+        </div>
       `;
 
-      /* МЕНЮ */
+      /* 🔥 КНОПКИ У СООБЩЕНИЯ */
       if(isMe){
-        const menu=document.createElement("div");
-        menu.className="msg-menu";
-
-        const edit=document.createElement("button");
-        edit.innerText="✏️";
-        edit.onclick=(e)=>{
+        const editBtn=document.createElement("button");
+        editBtn.innerText="✏️";
+        editBtn.onclick=(e)=>{
           e.stopPropagation();
-          const t=prompt("Новое сообщение");
-          if(t){
-            db.collection("messages").doc(doc.id).update({text:t});
-          }
+          startEdit(doc.id, m.text);
         };
 
-        const del=document.createElement("button");
-        del.innerText="❌";
-        del.onclick=(e)=>{
+        const delBtn=document.createElement("button");
+        delBtn.innerText="❌";
+        delBtn.onclick=(e)=>{
           e.stopPropagation();
           db.collection("messages").doc(doc.id).delete();
         };
 
-        menu.appendChild(edit);
-        menu.appendChild(del);
-        d.appendChild(menu);
+        const box=document.createElement("div");
+        box.style.display="flex";
+        box.style.gap="5px";
 
-        d.onclick=(e)=>{
-          e.stopPropagation();
+        box.appendChild(editBtn);
+        box.appendChild(delBtn);
 
-          if(openedMenu && openedMenu!==menu){
-            openedMenu.style.display="none";
-          }
-
-          menu.style.display="flex";
-          openedMenu=menu;
-        };
+        d.appendChild(box);
       }
 
       c.appendChild(d);
     });
 
-    /* 🔥 УМНЫЙ СКРОЛЛ */
-    if(atBottom){
-      setTimeout(()=>{
-        c.scrollTop=c.scrollHeight;
-      },50);
-    }
+    c.scrollTop=c.scrollHeight;
   });
 }
 
