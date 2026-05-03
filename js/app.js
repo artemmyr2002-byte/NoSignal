@@ -3,12 +3,17 @@ let selectedMsgId = null;
 
 function el(id){ return document.getElementById(id); }
 
+/* FIX COLOR */
 function getUserColor(uid){
+  if(!uid) uid = "unknown";
+
   let hash = 0;
   for(let i=0;i<uid.length;i++){
     hash = uid.charCodeAt(i) + ((hash<<5)-hash);
   }
+
   const h = Math.abs(hash % 360);
+
   return {
     c1:`hsl(${h},70%,45%)`,
     c2:`hsl(${(h+40)%360},70%,55%)`
@@ -18,17 +23,11 @@ function getUserColor(uid){
 window.onload = function(){
 
 /* AUTH */
-el("loginBtn").onclick = async ()=>{
-  try{
-    await auth.signInWithEmailAndPassword(el("email").value, el("password").value);
-  }catch(e){ alert(e.message); }
-};
+el("loginBtn").onclick = ()=>auth.signInWithEmailAndPassword(el("email").value, el("password").value);
 
 el("registerBtn").onclick = async ()=>{
-  try{
-    const cred = await auth.createUserWithEmailAndPassword(el("email").value, el("password").value);
-    await db.collection("users").doc(cred.user.uid).set({name:"User"});
-  }catch(e){ alert(e.message); }
+  const cred = await auth.createUserWithEmailAndPassword(el("email").value, el("password").value);
+  await db.collection("users").doc(cred.user.uid).set({name:"User"});
 };
 
 el("guestBtn").onclick = ()=>auth.signInAnonymously();
@@ -47,6 +46,7 @@ auth.onAuthStateChanged(async u=>{
   el("app").classList.remove("hidden");
 
   const ref = db.collection("users").doc(user.uid);
+
   if(!(await ref.get()).exists){
     await ref.set({name:"Guest"});
   }
@@ -65,9 +65,9 @@ el("sendBtn").onclick = async ()=>{
 
   await db.collection("messages").add({
     text,
-    name,
-    uid:user.uid,
-    time:Date.now()
+    name: name || "User",
+    uid: user.uid || "unknown",
+    time: Date.now()
   });
 
   el("msgInput").value="";
@@ -88,12 +88,13 @@ function loadMessages(){
       const d = document.createElement("div");
       d.className="msg "+(isMe?"my":"other");
 
-      const colors = getUserColor(m.uid||m.name);
+      const colors = getUserColor(m.uid || m.name || "user");
+
       d.style.background=`linear-gradient(135deg,${colors.c1},${colors.c2})`;
 
       d.innerHTML = `
-        <div class="name" style="color:${colors.c2}">${m.name}</div>
-        ${m.text}
+        <div class="name" style="color:${colors.c2}">${m.name || "User"}</div>
+        ${m.text || ""}
         <div class="meta">${new Date(m.time).toLocaleTimeString()} ${isMe?"✓✓":""}</div>
       `;
 
