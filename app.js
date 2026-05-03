@@ -19,8 +19,9 @@ auth.getRedirectResult().catch(console.error);
 auth.onAuthStateChanged(async user=>{
   if(!user) return;
   me=user;
-  auth.style.display="none";
-  app.classList.remove("hidden");
+
+  document.getElementById("auth").style.display="none";
+  document.getElementById("app").classList.remove("hidden");
 
   await db.collection("users").doc(me.uid).set({
     name:user.displayName||"Guest"
@@ -33,32 +34,41 @@ auth.onAuthStateChanged(async user=>{
 function avatarUrl(name){
   return "https://api.dicebear.com/7.x/initials/svg?seed="+name;
 }
-window.pickAvatar=src=>{
+
+window.pickAvatar=function(src){
   selectedAvatar=src;
-  avatar.src=src;
+  document.getElementById("avatar").src=src;
 };
 
 /* PROFILE */
-window.openProfile=async()=>{
-  if(!me) return;
-  profileModal.classList.remove("hidden");
-
-  const d=(await db.collection("users").doc(me.uid).get()).data()||{};
-  profileName.value=d.name||"";
-  avatar.src=d.avatar||avatarUrl(profileName.value||"User");
-};
-
-window.closeProfile=()=>profileModal.classList.add("hidden");
-
-window.saveProfile=async()=>{
+window.openProfile=async function(){
   if(!me) return alert("подожди");
 
-  const name=profileName.value.trim();
+  document.getElementById("profileModal").classList.remove("hidden");
+
+  const d=(await db.collection("users").doc(me.uid).get()).data()||{};
+  const name=d.name||"";
+
+  document.getElementById("profileName").value=name;
+
+  const ava=d.avatar||avatarUrl(name||"User");
+  document.getElementById("avatar").src=ava;
+  selectedAvatar=ava;
+};
+
+window.closeProfile=()=>document.getElementById("profileModal").classList.add("hidden");
+
+window.saveProfile=async function(){
+  if(!me) return alert("подожди");
+
+  const name=document.getElementById("profileName").value.trim();
   if(!name) return;
+
+  const avatar=document.getElementById("avatar").src;
 
   await db.collection("users").doc(me.uid).set({
     name,
-    avatar:selectedAvatar||avatar.src
+    avatar:selectedAvatar||avatar
   },{merge:true});
 
   closeProfile();
@@ -79,7 +89,7 @@ function loadChats(){
   });
 }
 
-/* OPEN */
+/* OPEN CHAT */
 function openChat(id,name){
   currentChat=id;
   chatTitle.innerText=name;
@@ -87,8 +97,10 @@ function openChat(id,name){
   db.collection("messages").doc(id).collection("items").orderBy("time")
   .onSnapshot(snap=>{
     messages.innerHTML="";
+
     snap.forEach(d=>{
       const m=d.data();
+
       const div=document.createElement("div");
       div.className="msg "+(m.uid===me.uid?"me":"");
 
@@ -118,7 +130,7 @@ function openChat(id,name){
 }
 
 /* SEND */
-window.sendMsg=async()=>{
+window.sendMsg=async ()=>{
   if(!currentChat||!me) return;
 
   const text=msgInput.value.trim();
@@ -126,33 +138,4 @@ window.sendMsg=async()=>{
 
   const u=(await db.collection("users").doc(me.uid).get()).data();
 
-  await db.collection("messages").doc(currentChat).collection("items").add({
-    text,
-    uid:me.uid,
-    name:u.name,
-    avatar:u.avatar||avatarUrl(u.name),
-    time:Date.now()
-  });
-
-  await db.collection("chats").doc(currentChat).set({typing:null},{merge:true});
-
-  msgInput.value="";
-};
-
-/* TYPING */
-msgInput.addEventListener("input",async()=>{
-  if(!currentChat||!me) return;
-
-  const u=(await db.collection("users").doc(me.uid).get()).data();
-
-  await db.collection("chats").doc(currentChat).set({
-    typing:{uid:me.uid,name:u.name,time:Date.now()}
-  },{merge:true});
-
-  clearTimeout(typingTimeout);
-  typingTimeout=setTimeout(()=>{
-    db.collection("chats").doc(currentChat).set({typing:null},{merge:true});
-  },1500);
-});
-
-window.logout=()=>auth.signOut();
+  await
