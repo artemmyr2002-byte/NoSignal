@@ -6,85 +6,136 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
+const auth = firebase.auth();
 const db = firebase.firestore();
 
-let username = null;
+let me = null;
+let currentChat = null;
 
-/* старт */
-window.startChat = function(){
+/* AUTH */
 
-  const name = document.getElementById("nameInput").value.trim();
+window.googleLogin = async ()=>{
+  const provider = new firebase.auth.GoogleAuthProvider();
+  await auth.signInWithPopup(provider);
+};
 
-  if(!name){
-    alert("Введите имя");
-    return;
-  }
+window.guestLogin = async ()=>{
+  await auth.signInAnonymously();
+};
 
-  username = name;
+auth.onAuthStateChanged(async user=>{
 
-  document.getElementById("nameModal").classList.add("hidden");
+  if(!user) return;
+
+  me = user;
+
+  document.getElementById("authScreen").classList.add("hidden");
   document.getElementById("app").classList.remove("hidden");
 
-  loadMessages();
+  await db.collection("users").doc(me.uid).set({
+    name: user.displayName || "Guest",
+    last: Date.now()
+  },{merge:true});
 
-};
-
-/* отправка */
-window.sendMsg = async function(){
-
-  const input = document.getElementById("msgInput");
-  const text = input.value.trim();
-
-  if(!text || !username) return;
-
-  try{
-
-    await db.collection("messages").add({
-      text,
-      user: username,
-      time: Date.now()
-    });
-
-  }catch(e){
-    console.log("send error", e);
-  }
-
-  input.value="";
-};
-
-/* enter */
-document.getElementById("msgInput").addEventListener("keydown", e=>{
-  if(e.key==="Enter") sendMsg();
+  loadChats();
 });
 
-/* загрузка */
-function loadMessages(){
+/* CREATE CHAT */
 
-  db.collection("messages")
-  .orderBy("time")
+window.createChat = async ()=>{
+  const chat = await db.collection("chats").add({
+    users:[me.uid],
+    name:"Чат"
+  });
+};
+
+/* LOAD CHATS */
+
+function loadChats(){
+
+  db.collection("chats")
   .onSnapshot(snap=>{
 
-    const box = document.getElementById("messages");
-    box.innerHTML="";
+    chatList.innerHTML="";
 
     snap.forEach(doc=>{
 
-      const m = doc.data();
-      const isMe = m.user === username;
+      const c = doc.data();
 
-      box.innerHTML += `
-        <div class="msg ${isMe ? "right" : ""}">
-          <div class="bubble ${isMe ? "gradient" : "orange"}">
-            <b>${m.user}</b><br>
-            ${m.text}
-          </div>
-        </div>
-      `;
+      const el = document.createElement("div");
+      el.innerText = c.name;
+
+      el.onclick = ()=>{
+        openChat(doc.id, c.name);
+      };
+
+      chatList.appendChild(el);
 
     });
-
-    box.scrollTop = box.scrollHeight;
 
   });
 
 }
+
+/* OPEN CHAT */
+
+function openChat(id,name){
+
+  currentChat = id;
+  chatTitle.innerText = name;
+
+  db.collection("messages")
+    .doc(id)
+    .collection("items")
+    .orderBy("time")
+    .onSnapshot(snap=>{
+
+      messages.innerHTML="";
+
+      snap.forEach(d=>{
+
+        const m = d.data();
+
+        const div = document.createElement("div");
+        div.className = "msg " + (m.uid===me.uid?"me":"other");
+
+        div.innerHTML = `
+          <div class="bubble">
+            ${m.text}
+          </div>
+        `;
+
+        messages.appendChild(div);
+
+      });
+
+    });
+
+}
+
+/* SEND */
+
+window.sendMsg = async ()=>{
+
+  if(!currentChat) return;
+
+  const text = msgInput.value.trim();
+  if(!text) return;
+
+  await db.collection("messages")
+    .doc(currentChat)
+    .collection("items")
+    .add({
+      text,
+      uid: me.uid,
+      time: Date.now()
+    });
+
+  msgInput.value="";
+};
+
+/* LOGOUT */
+
+window.logout = ()=>{
+  auth.signOut();
+};
