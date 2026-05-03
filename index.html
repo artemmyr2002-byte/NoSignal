@@ -16,67 +16,37 @@
 
 <div id="auth" class="center">
   <h1>NovaChat</h1>
-  <button id="googleBtn">Google</button>
-  <button id="guestBtn">Гость</button>
+  <button id="guestBtn">Войти как гость</button>
 </div>
 
-<div id="app" class="app hidden">
+<div id="app" class="hidden">
 
-  <div class="sidebar">
-    <button id="createChatBtn">+ чат</button>
-    <div id="chatList"></div>
-  </div>
+  <button id="openProfile">Профиль</button>
 
-  <div class="chat">
-
-    <div class="topbar">
-      <span id="chatTitle">чат</span>
-
-      <div>
-        <button id="profileBtn">👤</button>
-        <button id="logoutBtn">⎋</button>
-      </div>
-    </div>
-
-    <div id="typingStatus" class="typing hidden">
-      <span id="typingName"></span>
-      <span class="dots"><span></span><span></span><span></span></span>
-    </div>
-
-    <div id="messages" class="messages"></div>
-
-    <div class="inputBar">
-      <input id="msgInput">
-      <button id="sendBtn">➤</button>
-    </div>
-
-  </div>
 </div>
 
-<!-- PROFILE -->
+<!-- ПРОФИЛЬ -->
 <div id="profileModal" class="modal hidden">
-  <div class="modalBox">
+  <div class="box">
 
     <h3>Профиль</h3>
 
     <img id="avatar">
 
-    <input id="profileName">
+    <input id="nameInput" placeholder="Имя">
 
-    <div class="avatars">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" class="avatarOption">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=2" class="avatarOption">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" class="avatarOption">
+    <div>
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" class="ava">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=2" class="ava">
+      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" class="ava">
     </div>
 
-    <button id="saveProfileBtn">Сохранить</button>
-    <button id="closeProfileBtn">✕</button>
+    <button id="saveBtn">Сохранить</button>
+    <button id="closeBtn">✕</button>
 
   </div>
 </div>
 
-<audio id="msgSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
-
-<script src="app.js?v=3"></script>
+<script src="app.js"></script>
 </body>
 </html>
