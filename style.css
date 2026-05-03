@@ -44,12 +44,17 @@ button{
   flex-direction:column;
 }
 
-/* TOP */
+/* 🔥 ЛИПКАЯ ВЕРХНЯЯ ПАНЕЛЬ */
 .top{
+  position:sticky;
+  top:0;
+  z-index:100;
+
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:12px;
+
   background:#202c33;
   border-bottom:1px solid #2a3942;
 }
@@ -59,35 +64,49 @@ button{
   flex:1;
   display:flex;
   flex-direction:column;
+  height:100%;
 }
 
 #messages{
   flex:1;
   overflow-y:auto;
-  padding:10px;
+  padding:6px 8px;
   display:flex;
   flex-direction:column;
 }
 
 /* MESSAGE BASE */
 .msg{
-  max-width:70%;
-  padding:10px;
-  margin:6px 0;
+  max-width:75%;
+  padding:8px 10px;
+  margin:2px 0;
   border-radius:12px;
   word-wrap:break-word;
+  font-size:14px;
+  position:relative;
 }
 
-/* МОИ (справа, зелёные) */
+/* МОИ (справа) */
 .my{
   align-self:flex-end;
-  background:#005c4b;
+  background:linear-gradient(135deg, #005c4b, #008069);
 }
 
-/* ЧУЖИЕ (слева, тёмные) */
+/* ЧУЖИЕ (переливающиеся) */
 .other{
   align-self:flex-start;
-  background:#202c33;
+
+  background:linear-gradient(270deg, #2a3942, #3a4f5a, #2a3942);
+  background-size:600% 600%;
+
+  animation:gradientMove 6s ease infinite;
+}
+
+/* АНИМАЦИЯ */
+@keyframes gradientMove {
+  0%{ background-position:0% 50% }
+  50%{ background-position:100% 50% }
+  100%{ background-position:0% 50% }
 }
 
 /* SEND */
@@ -100,6 +119,14 @@ button{
 .send input{
   flex:1;
   margin-right:10px;
+}
+
+/* ВРЕМЯ */
+.time{
+  font-size:11px;
+  opacity:0.6;
+  margin-top:4px;
+  text-align:right;
 }
 
 /* PROFILE */
