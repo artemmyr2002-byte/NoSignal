@@ -2,13 +2,12 @@ let user = null;
 
 function el(id){ return document.getElementById(id); }
 
-/* 🎨 генерация цвета */
+/* 🎨 цвет */
 function getUserColor(uid){
   let hash = 0;
   for(let i=0;i<uid.length;i++){
     hash = uid.charCodeAt(i) + ((hash<<5)-hash);
   }
-
   const h = hash % 360;
   return {
     c1: `hsl(${h},70%,45%)`,
@@ -16,9 +15,12 @@ function getUserColor(uid){
   };
 }
 
-/* 🚫 анти-спам */
+/* анти-спам */
 let lastSend = 0;
-const SEND_DELAY = 800; // мс
+const SEND_DELAY = 500;
+
+/* чтобы не дублировалось */
+let loadedIds = new Set();
 
 window.onload = function(){
 
@@ -116,13 +118,10 @@ el("msgInput").addEventListener("keydown", e=>{
   if(e.key === "Enter") sendMessage();
 });
 
-/* ⚡ ОТПРАВКА БЕЗ ЛАГА */
 async function sendMessage(){
   if(!user) return;
 
   const now = Date.now();
-
-  // 🚫 анти-спам
   if(now - lastSend < SEND_DELAY) return;
   lastSend = now;
 
@@ -133,28 +132,8 @@ async function sendMessage(){
   const userDoc = await db.collection("users").doc(user.uid).get();
   const name = userDoc.data().name;
 
-  const container = el("messages");
-
-  // 🔥 МГНОВЕННО ДОБАВЛЯЕМ В UI
-  const temp = document.createElement("div");
-  temp.className = "msg my";
-
-  const date = new Date();
-  const time =
-    date.getHours().toString().padStart(2,'0') + ":" +
-    date.getMinutes().toString().padStart(2,'0');
-
-  temp.innerHTML = `
-    ${text}
-    <div class="meta">${time} ⏳</div>
-  `;
-
-  container.appendChild(temp);
-  container.scrollTop = container.scrollHeight;
-
   input.value = "";
 
-  // 🚀 отправка в firebase
   await db.collection("messages").add({
     text,
     name,
@@ -163,16 +142,21 @@ async function sendMessage(){
   });
 }
 
-/* LOAD */
+/* 🔥 ДОБАВЛЕНИЕ БЕЗ ОЧИСТКИ */
 
 function loadMessages(){
   db.collection("messages")
     .orderBy("time")
     .onSnapshot(snap=>{
       const container = el("messages");
-      container.innerHTML = "";
 
-      snap.forEach(doc=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type !== "added") return;
+
+        const doc = change.doc;
+        if(loadedIds.has(doc.id)) return;
+        loadedIds.add(doc.id);
+
         const m = doc.data();
 
         const isMe =
@@ -208,9 +192,8 @@ function loadMessages(){
         }
 
         container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
       });
-
-      container.scrollTop = container.scrollHeight;
     });
 }
 
