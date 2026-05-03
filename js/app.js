@@ -1,11 +1,9 @@
 let user=null;
 let userData={};
-
-let editingId=null; // 🔥 редактируемое сообщение
+let editingId=null;
 
 function el(id){return document.getElementById(id);}
 
-/* base64 */
 function toBase64(file){
   return new Promise(res=>{
     const r=new FileReader();
@@ -31,16 +29,23 @@ el("guestBtn").onclick=()=>auth.signInAnonymously();
 
 el("logoutBtn").onclick=()=>auth.signOut();
 
-/* PROFILE */
-el("profileBtn").onclick=()=>{
+/* ПРОФИЛЬ */
+el("profileBtn").onclick=(e)=>{
+  e.stopPropagation();
   el("profile").classList.remove("hidden");
 };
 
+el("profile").onclick=(e)=>{
+  if(e.target.id==="profile"){
+    el("profile").classList.add("hidden");
+  }
+};
+
 el("saveProfile").onclick=async ()=>{
-  const name=el("nameInput").value;
+  const name=el("nameInput").value.trim();
   const file=el("avatarInput").files[0];
 
-  let avatar=userData.avatar || "";
+  let avatar=userData.avatar||"";
 
   if(file){
     avatar=await toBase64(file);
@@ -79,15 +84,14 @@ auth.onAuthStateChanged(async u=>{
   loadMessages();
 });
 
-/* 🔥 ОТПРАВКА / РЕДАКТИРОВАНИЕ */
+/* ОТПРАВКА */
 el("sendBtn").onclick=async ()=>{
-
   const text=el("msgInput").value.trim();
   const file=el("fileInput").files[0];
 
   if(!text && !file) return;
 
-  /* 🔥 ЕСЛИ РЕДАКТИРУЕМ */
+  /* РЕДАКТИРОВАНИЕ */
   if(editingId){
     await db.collection("messages").doc(editingId).update({
       text,
@@ -100,7 +104,6 @@ el("sendBtn").onclick=async ()=>{
     return;
   }
 
-  /* обычная отправка */
   let fileData="";
   if(file){
     fileData=await toBase64(file);
@@ -120,14 +123,14 @@ el("sendBtn").onclick=async ()=>{
   el("fileInput").value="";
 };
 
-/* 🔥 НАЧАТЬ РЕДАКТИРОВАНИЕ */
-function startEdit(id, text){
+/* НАЧАТЬ РЕДАКТИРОВАНИЕ */
+function startEdit(id,text){
   editingId=id;
   el("msgInput").value=text;
   el("sendBtn").innerText="Сохранить";
 }
 
-/* LOAD */
+/* ЗАГРУЗКА */
 function loadMessages(){
   db.collection("messages").orderBy("time")
   .onSnapshot(snap=>{
@@ -138,48 +141,41 @@ function loadMessages(){
       const m=doc.data();
       const d=document.createElement("div");
 
-      const isMe = m.uid===user.uid;
+      const isMe=m.uid===user.uid;
 
       d.className="msg "+(isMe?"my":"other");
       d.style.background="linear-gradient(135deg,#00a884,#008069)";
 
       d.innerHTML=`
         <div class="name">${m.name||"User"}</div>
-
-        ${m.avatar?`<img src="${m.avatar}" width="30">`:""}
-
+        ${m.avatar?`<img src="${m.avatar}" width="28">`:""}
         <div>${m.text||""}</div>
-
         ${m.file?`<a href="${m.file}" target="_blank">📎 файл</a>`:""}
-
         <div class="meta">
           ${new Date(m.time).toLocaleTimeString()}
           ${m.edited?"(изменено)":""}
         </div>
       `;
 
-      /* 🔥 КНОПКИ У СООБЩЕНИЯ */
       if(isMe){
-        const editBtn=document.createElement("button");
-        editBtn.innerText="✏️";
-        editBtn.onclick=(e)=>{
+        const box=document.createElement("div");
+
+        const eBtn=document.createElement("button");
+        eBtn.innerText="✏️";
+        eBtn.onclick=(e)=>{
           e.stopPropagation();
-          startEdit(doc.id, m.text);
+          startEdit(doc.id,m.text);
         };
 
-        const delBtn=document.createElement("button");
-        delBtn.innerText="❌";
-        delBtn.onclick=(e)=>{
+        const dBtn=document.createElement("button");
+        dBtn.innerText="❌";
+        dBtn.onclick=(e)=>{
           e.stopPropagation();
           db.collection("messages").doc(doc.id).delete();
         };
 
-        const box=document.createElement("div");
-        box.style.display="flex";
-        box.style.gap="5px";
-
-        box.appendChild(editBtn);
-        box.appendChild(delBtn);
+        box.appendChild(eBtn);
+        box.appendChild(dBtn);
 
         d.appendChild(box);
       }
