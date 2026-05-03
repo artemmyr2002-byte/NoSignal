@@ -14,18 +14,32 @@
 
 <body>
 
+<!-- AUTH -->
 <div id="auth" class="center">
   <h1>NovaChat</h1>
-  <button id="guestBtn">Войти как гость</button>
+
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Пароль">
+
+  <button id="loginBtn">Войти</button>
+  <button id="registerBtn">Регистрация</button>
+  <button id="guestBtn">Гость</button>
+
+  <div id="authError" class="error"></div>
 </div>
 
+<!-- APP -->
 <div id="app" class="hidden">
 
-  <button id="openProfile">Профиль</button>
+  <div class="topbar">
+    <span id="userName">...</span>
+    <button id="profileBtn">Профиль</button>
+    <button id="logoutBtn">Выйти</button>
+  </div>
 
 </div>
 
-<!-- ПРОФИЛЬ -->
+<!-- PROFILE -->
 <div id="profileModal" class="modal hidden">
   <div class="box">
 
@@ -35,18 +49,12 @@
 
     <input id="nameInput" placeholder="Имя">
 
-    <div>
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=1" class="ava">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=2" class="ava">
-      <img src="https://api.dicebear.com/7.x/adventurer/svg?seed=3" class="ava">
-    </div>
-
-    <button id="saveBtn">Сохранить</button>
-    <button id="closeBtn">✕</button>
+    <button id="saveProfile">Сохранить</button>
+    <button id="closeProfile">✕</button>
 
   </div>
 </div>
 
-<script src="app.js"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
