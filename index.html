@@ -4,45 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NovaChat</title>
+<title>NovaChat PRO</title>
 
 <link rel="stylesheet" href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
 
-<div class="app hidden" id="app">
-
-  <div class="chat">
-
-    <div class="chatHeader">
-      <b>Global Chat</b>
-    </div>
-
-    <div class="messages" id="messages"></div>
-
-    <div class="inputBar">
-      <input id="msgInput" placeholder="Написать сообщение...">
-      <button onclick="sendMsg()">➤</button>
-    </div>
-
-  </div>
-
+<div id="authScreen" class="center">
+  <h2>NovaChat</h2>
+  <button onclick="googleLogin()">Войти через Google</button>
+  <button onclick="guestLogin()">Продолжить как гость</button>
 </div>
 
-<!-- NAME MODAL -->
-<div class="modal" id="nameModal">
+<div class="app hidden" id="app">
 
-  <div class="modalBox">
+  <!-- LEFT -->
+  <div class="sidebar">
+    <button onclick="createChat()">+ Чат</button>
+    <div id="chatList"></div>
+  </div>
 
-    <h2>Введите имя</h2>
+  <!-- CHAT -->
+  <div class="chat">
 
-    <input id="nameInput" placeholder="Ваше имя">
+    <div class="topbar">
+      <span id="chatTitle">Выбери чат</span>
+      <button onclick="logout()">Выйти</button>
+    </div>
 
-    <button onclick="startChat()">Войти</button>
+    <div id="messages" class="messages"></div>
+
+    <div class="inputBar">
+      <input id="msgInput" placeholder="Сообщение">
+      <button onclick="sendMsg()">➤</button>
+    </div>
 
   </div>
 
