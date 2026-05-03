@@ -1,5 +1,3 @@
-document.addEventListener("DOMContentLoaded", function(){
-
 const firebaseConfig = {
   apiKey: "AIzaSyDVbJwMeX0FTZfC7NH5ghQxEh1eRxvMxto",
   authDomain: "voidlauncher-bab33.firebaseapp.com",
@@ -11,103 +9,88 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let me = null;
+let currentUser = null;
 let selectedAvatar = "";
 
-/* helpers */
-function el(id){ return document.getElementById(id); }
-function avatarUrl(name){
-  return "https://api.dicebear.com/7.x/initials/svg?seed=" + name;
-}
+/* элементы */
+const guestBtn = document.getElementById("guestBtn");
+const app = document.getElementById("app");
+const authBox = document.getElementById("auth");
 
-/* ================= AUTH ================= */
+const modal = document.getElementById("profileModal");
+const openProfile = document.getElementById("openProfile");
+const closeBtn = document.getElementById("closeBtn");
+const saveBtn = document.getElementById("saveBtn");
 
-el("googleBtn").onclick = () => {
-  auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+const avatar = document.getElementById("avatar");
+const nameInput = document.getElementById("nameInput");
+
+/* вход */
+guestBtn.onclick = async () => {
+  await auth.signInAnonymously();
 };
 
-el("guestBtn").onclick = () => {
-  auth.signInAnonymously();
-};
+/* отслеживание */
+auth.onAuthStateChanged(user => {
+  if(!user) return;
 
-/* ВАЖНО: обрабатываем возврат */
-auth.getRedirectResult().then(res=>{
-  console.log("redirect:", res);
-}).catch(console.error);
+  currentUser = user;
 
-/* ГЛАВНОЕ СОБЫТИЕ */
-auth.onAuthStateChanged(async (user)=>{
-  console.log("AUTH:", user);
-
-  if(!user){
-    me = null;
-    return;
-  }
-
-  me = user;
-
-  el("auth").style.display = "none";
-  el("app").classList.remove("hidden");
-
-  await db.collection("users").doc(me.uid).set({
-    name: user.displayName || "Guest"
-  }, { merge: true });
-
+  authBox.classList.add("hidden");
+  app.classList.remove("hidden");
 });
 
-/* ================= PROFILE ================= */
-
-el("profileBtn").onclick = async () => {
-  if(!me){
-    alert("Ты не вошёл в аккаунт");
+/* открыть профиль */
+openProfile.onclick = async () => {
+  if(!currentUser){
+    alert("Сначала войди");
     return;
   }
 
-  el("profileModal").classList.remove("hidden");
+  modal.classList.remove("hidden");
 
-  const doc = await db.collection("users").doc(me.uid).get();
+  const doc = await db.collection("users").doc(currentUser.uid).get();
   const data = doc.data() || {};
 
-  el("profileName").value = data.name || "";
+  nameInput.value = data.name || "";
 
-  const ava = data.avatar || avatarUrl(data.name || "User");
-  el("avatar").src = ava;
+  const ava = data.avatar || "https://api.dicebear.com/7.x/initials/svg?seed=User";
+  avatar.src = ava;
 
   selectedAvatar = ava;
 };
 
-el("closeProfileBtn").onclick = () => {
-  el("profileModal").classList.add("hidden");
-};
+/* закрыть */
+closeBtn.onclick = () => modal.classList.add("hidden");
 
-el("saveProfileBtn").onclick = async () => {
-  if(!me){
-    alert("Сначала войди в аккаунт");
+/* выбор аватарки */
+document.querySelectorAll(".ava").forEach(img=>{
+  img.onclick = ()=>{
+    selectedAvatar = img.src;
+    avatar.src = img.src;
+  };
+});
+
+/* сохранить */
+saveBtn.onclick = async () => {
+
+  const user = auth.currentUser;
+
+  if(!user){
+    alert("Ты не вошёл");
     return;
   }
 
-  const name = el("profileName").value.trim();
+  const name = nameInput.value.trim();
   if(!name){
     alert("Введите имя");
     return;
   }
 
-  await db.collection("users").doc(me.uid).set({
+  await db.collection("users").doc(user.uid).set({
     name: name,
-    avatar: selectedAvatar || el("avatar").src
-  }, { merge: true });
+    avatar: selectedAvatar || avatar.src
+  }, { merge:true });
 
-  alert("Сохранено");
-  el("profileModal").classList.add("hidden");
+  alert("СОХРАНЕНО ✅");
 };
-
-/* ================= AVATAR ================= */
-
-document.querySelectorAll(".avatarOption").forEach(img=>{
-  img.onclick = ()=>{
-    selectedAvatar = img.src;
-    el("avatar").src = img.src;
-  };
-});
-
-});
