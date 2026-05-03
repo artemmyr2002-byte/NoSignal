@@ -10,87 +10,104 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let currentUser = null;
-let selectedAvatar = "";
 
-/* элементы */
-const guestBtn = document.getElementById("guestBtn");
-const app = document.getElementById("app");
-const authBox = document.getElementById("auth");
+/* helpers */
+const el = id => document.getElementById(id);
+const defaultAvatar = (uid) =>
+  "https://api.dicebear.com/7.x/identicon/svg?seed=" + uid;
 
-const modal = document.getElementById("profileModal");
-const openProfile = document.getElementById("openProfile");
-const closeBtn = document.getElementById("closeBtn");
-const saveBtn = document.getElementById("saveBtn");
+/* ================= AUTH ================= */
 
-const avatar = document.getElementById("avatar");
-const nameInput = document.getElementById("nameInput");
+el("loginBtn").onclick = async ()=>{
+  try{
+    await auth.signInWithEmailAndPassword(
+      el("email").value,
+      el("password").value
+    );
+  }catch(e){
+    el("authError").innerText = e.message;
+  }
+};
 
-/* вход */
-guestBtn.onclick = async () => {
+el("registerBtn").onclick = async ()=>{
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(
+      el("email").value,
+      el("password").value
+    );
+
+    await db.collection("users").doc(cred.user.uid).set({
+      name:"User",
+      avatar: defaultAvatar(cred.user.uid)
+    });
+
+  }catch(e){
+    el("authError").innerText = e.message;
+  }
+};
+
+el("guestBtn").onclick = async ()=>{
   await auth.signInAnonymously();
 };
 
-/* отслеживание */
-auth.onAuthStateChanged(user => {
-  if(!user) return;
+/* ================= STATE ================= */
+
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    currentUser = null;
+    el("auth").classList.remove("hidden");
+    el("app").classList.add("hidden");
+    return;
+  }
 
   currentUser = user;
 
-  authBox.classList.add("hidden");
-  app.classList.remove("hidden");
+  el("auth").classList.add("hidden");
+  el("app").classList.remove("hidden");
+
+  const ref = db.collection("users").doc(user.uid);
+  const doc = await ref.get();
+
+  if(!doc.exists){
+    await ref.set({
+      name: user.email || "Guest",
+      avatar: defaultAvatar(user.uid)
+    });
+  }
+
+  const data = (await ref.get()).data();
+
+  el("userName").innerText = data.name;
 });
 
-/* открыть профиль */
-openProfile.onclick = async () => {
-  if(!currentUser){
-    alert("Сначала войди");
-    return;
-  }
+/* ================= PROFILE ================= */
 
-  modal.classList.remove("hidden");
+el("profileBtn").onclick = async ()=>{
+  const ref = db.collection("users").doc(currentUser.uid);
+  const data = (await ref.get()).data();
 
-  const doc = await db.collection("users").doc(currentUser.uid).get();
-  const data = doc.data() || {};
+  el("profileModal").classList.remove("hidden");
 
-  nameInput.value = data.name || "";
-
-  const ava = data.avatar || "https://api.dicebear.com/7.x/initials/svg?seed=User";
-  avatar.src = ava;
-
-  selectedAvatar = ava;
+  el("nameInput").value = data.name;
+  el("avatar").src = data.avatar;
 };
 
-/* закрыть */
-closeBtn.onclick = () => modal.classList.add("hidden");
-
-/* выбор аватарки */
-document.querySelectorAll(".ava").forEach(img=>{
-  img.onclick = ()=>{
-    selectedAvatar = img.src;
-    avatar.src = img.src;
-  };
-});
-
-/* сохранить */
-saveBtn.onclick = async () => {
-
-  const user = auth.currentUser;
-
-  if(!user){
-    alert("Ты не вошёл");
-    return;
-  }
-
-  const name = nameInput.value.trim();
-  if(!name){
-    alert("Введите имя");
-    return;
-  }
-
-  await db.collection("users").doc(user.uid).set({
-    name: name,
-    avatar: selectedAvatar || avatar.src
-  }, { merge:true });
-
-  alert("СОХРАНЕНО ✅");
+el("closeProfile").onclick = ()=>{
+  el("profileModal").classList.add("hidden");
 };
+
+el("saveProfile").onclick = async ()=>{
+  const name = el("nameInput").value.trim();
+  if(!name) return alert("Введите имя");
+
+  await db.collection("users").doc(currentUser.uid).update({
+    name
+  });
+
+  el("profileModal").classList.add("hidden");
+  el("userName").innerText = name;
+};
+
+/* ================= LOGOUT ================= */
+
+el("logoutBtn").onclick = ()=>auth.signOut();
