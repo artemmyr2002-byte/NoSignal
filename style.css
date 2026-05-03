@@ -1,36 +1,91 @@
-/* header */
-.modalHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-/* крестик */
-.closeBtn{
-  background:none;
-  border:none;
-  color:white;
-  font-size:20px;
-  cursor:pointer;
-  opacity:0.7;
-}
-
-.closeBtn:hover{
-  opacity:1;
-  transform:scale(1.2);
-}
-
-/* клик вне окна */
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
+body{
+  margin:0;
+  font-family:Arial;
+  background: linear-gradient(120deg,#ff4d6d,#5f27cd);
+  height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
 }
 
-/* чтобы клик не проходил внутрь */
-.modalBox{
-  position:relative;
+.app{
+  width:95%;
+  height:90vh;
+  display:flex;
+  background:#0f1220;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.sidebar{
+  width:220px;
+  background:#111427;
+  padding:15px;
+  color:white;
+}
+
+.chat{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+.chatHeader{
+  padding:15px;
+  border-bottom:1px solid #222;
+  color:white;
+}
+
+.messages{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
+.msg{
+  display:flex;
+  margin-bottom:15px;
+}
+
+.msg.right{
+  justify-content:flex-end;
+}
+
+.bubble{
+  padding:12px 16px;
+  border-radius:20px;
+  max-width:250px;
+  color:white;
+}
+
+.orange{
+  background:linear-gradient(45deg,#ff7a18,#ff3d3d);
+}
+
+.gradient{
+  background:linear-gradient(45deg,#a100ff,#ff00a6);
+}
+
+.inputBar{
+  display:flex;
+  padding:15px;
+  gap:10px;
+}
+
+.inputBar input{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#1c2040;
+  color:white;
+}
+
+.inputBar button{
+  background:linear-gradient(45deg,#ff00a6,#a100ff);
+  border:none;
+  padding:10px 15px;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
 }
