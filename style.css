@@ -1,177 +1,53 @@
-.server{
-  padding:8px;
-  margin-top:5px;
+body{
+  margin:0;
+  font-family:Arial;
+  color:white;
+  overflow:hidden;
+}
+
+.bg{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background: radial-gradient(circle at top, #1a1a40, #05060a);
+  z-index:-1;
+}
+
+.app{
+  display:flex;
+  height:100vh;
+}
+
+.sidebar{
+  width:240px;
   background: rgba(255,255,255,0.05);
-  border-radius:8px;
-  cursor:pointer;
+  backdrop-filter: blur(16px);
+  padding:10px;
 }
 
-.server:hover{
-  background: rgba(0,200,255,0.2);
-}
-const firebaseConfig = {
-  apiKey: "AIzaSyBo9z598gFXbx9pH9zLGS4Uncx0hDg",
-  authDomain: "voidlauncher-bab33.firebaseapp.com",
-  projectId: "voidlauncher-bab33",
-  storageBucket: "voidlauncher-bab33.firebasestorage.app",
-  messagingSenderId: "273997309805",
-  appId: "1:273997309805:web:a43ce719cb30fcf9dc9c64"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-let me;
-let username = "User_" + Math.floor(Math.random()*9999);
-let currentServer = "general";
-
-/* LOGIN */
-auth.signInAnonymously()
-.then(u=>{
-  me = u.user;
-
-  db.collection("users").doc(me.uid).set({
-    name: username,
-    online: true
-  }, {merge:true});
-
-  init();
-})
-.catch(err=>{
-  console.log(err);
-});
-
-/* INIT */
-function init(){
-  loadServers();
-  loadMessages();
-  loadUsers();
-  renderProfile();
+.chat{
+  flex:1;
+  display:flex;
+  flex-direction:column;
 }
 
-/* PROFILE */
-function renderProfile(){
-  document.getElementById("profile").innerHTML = `
-    <b>${username}</b><br>
-    <small>${me.uid.slice(0,6)}</small>
-  `;
+#messages{
+  flex:1;
+  overflow:auto;
+  padding:10px;
 }
 
-/* SEND MESSAGE */
-document.getElementById("msgInput").addEventListener("keydown", async e=>{
-  if(e.key !== "Enter") return;
-
-  let text = e.target.value.trim();
-  if(!text) return;
-
-  await db.collection("messages").add({
-    text,
-    uid: me.uid,
-    name: username,
-    serverId: currentServer,
-    time: Date.now()
-  });
-
-  e.target.value="";
-});
-
-/* LOAD MESSAGES */
-function loadMessages(){
-
-  db.collection("messages")
-  .where("serverId","==",currentServer)
-  .orderBy("time")
-  .onSnapshot(snap=>{
-
-    const box = document.getElementById("messages");
-    box.innerHTML = "";
-
-    snap.forEach(d=>{
-      let m = d.data();
-
-      box.innerHTML += `
-        <div class="msg">
-          <b>${m.name}</b><br>
-          ${m.text}
-        </div>
-      `;
-    });
-
-    box.scrollTop = box.scrollHeight;
-  });
-
+.msg{
+  margin:6px 0;
+  padding:8px;
+  background: rgba(255,255,255,0.05);
+  border-radius:10px;
 }
 
-/* SERVERS */
-function loadServers(){
-
-  const box = document.getElementById("servers");
-
-  // если серверов нет — создаём базовые
-  db.collection("servers").get().then(snap=>{
-    if(snap.empty){
-
-      db.collection("servers").add({name:"general", id:"general"});
-      db.collection("servers").add({name:"random", id:"random"});
-    }
-  });
-
-  db.collection("servers").onSnapshot(snap=>{
-
-    box.innerHTML = "";
-
-    snap.forEach(d=>{
-      let s = d.data();
-
-      box.innerHTML += `
-        <div class="server" onclick="switchServer('${s.name}')">
-          # ${s.name}
-        </div>
-      `;
-    });
-
-  });
-
+input{
+  padding:12px;
+  border:none;
+  outline:none;
+  background: rgba(255,255,255,0.08);
+  color:white;
 }
-
-/* SWITCH SERVER */
-window.switchServer = function(name){
-
-  currentServer = name;
-  loadMessages();
-
-}
-
-/* USERS */
-function loadUsers(){
-
-  db.collection("users").onSnapshot(snap=>{
-
-    const box = document.getElementById("users");
-    box.innerHTML = "";
-
-    snap.forEach(d=>{
-      let u = d.data();
-
-      box.innerHTML += `
-        <div>
-          ${u.online ? "🟢" : "⚪"} ${u.name}
-        </div>
-      `;
-    });
-
-  });
-
-}
-
-/* KEEP ONLINE */
-setInterval(()=>{
-  if(me){
-    db.collection("users").doc(me.uid).update({
-      online:true,
-      last:Date.now()
-    });
-  }
-},5000);
