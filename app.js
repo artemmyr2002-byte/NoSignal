@@ -9,28 +9,17 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let me=null;
-let currentChat=null;
+let me=null,currentChat=null,selectedAvatar="",firstLoad=true,typingTimeout=null;
 
 /* AUTH */
-
-window.googleLogin = async ()=>{
-  const provider=new firebase.auth.GoogleAuthProvider();
-  await auth.signInWithRedirect(provider);
-};
-
-window.guestLogin = async ()=>{
-  await auth.signInAnonymously();
-};
-
+window.googleLogin=()=>auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+window.guestLogin=()=>auth.signInAnonymously();
 auth.getRedirectResult().catch(console.error);
 
 auth.onAuthStateChanged(async user=>{
   if(!user) return;
-
   me=user;
-
-  authDiv.style.display="none";
+  auth.style.display="none";
   app.classList.remove("hidden");
 
   await db.collection("users").doc(me.uid).set({
@@ -40,102 +29,130 @@ auth.onAuthStateChanged(async user=>{
   loadChats();
 });
 
-/* CHATS */
-
-window.createChat = async ()=>{
-  await db.collection("chats").add({
-    name:"Чат",
-    users:[me.uid],
-    created:Date.now()
-  });
+/* AVATAR */
+function avatarUrl(name){
+  return "https://api.dicebear.com/7.x/initials/svg?seed="+name;
+}
+window.pickAvatar=src=>{
+  selectedAvatar=src;
+  avatar.src=src;
 };
 
+/* PROFILE */
+window.openProfile=async()=>{
+  if(!me) return;
+  profileModal.classList.remove("hidden");
+
+  const d=(await db.collection("users").doc(me.uid).get()).data()||{};
+  profileName.value=d.name||"";
+  avatar.src=d.avatar||avatarUrl(profileName.value||"User");
+};
+
+window.closeProfile=()=>profileModal.classList.add("hidden");
+
+window.saveProfile=async()=>{
+  if(!me) return alert("подожди");
+
+  const name=profileName.value.trim();
+  if(!name) return;
+
+  await db.collection("users").doc(me.uid).set({
+    name,
+    avatar:selectedAvatar||avatar.src
+  },{merge:true});
+
+  closeProfile();
+};
+
+/* CHATS */
+window.createChat=()=>db.collection("chats").add({name:"чат",created:Date.now()});
+
 function loadChats(){
-  db.collection("chats")
-  .orderBy("created","desc")
-  .onSnapshot(snap=>{
+  db.collection("chats").onSnapshot(s=>{
     chatList.innerHTML="";
-    snap.forEach(doc=>{
-      const c=doc.data();
+    s.forEach(doc=>{
       const el=document.createElement("div");
-      el.innerText=c.name;
-      el.onclick=()=>openChat(doc.id,c.name);
+      el.innerText=doc.data().name;
+      el.onclick=()=>openChat(doc.id,doc.data().name);
       chatList.appendChild(el);
     });
   });
 }
 
 /* OPEN */
-
 function openChat(id,name){
   currentChat=id;
   chatTitle.innerText=name;
 
-  db.collection("messages")
-  .doc(id)
-  .collection("items")
-  .orderBy("time")
+  db.collection("messages").doc(id).collection("items").orderBy("time")
   .onSnapshot(snap=>{
     messages.innerHTML="";
     snap.forEach(d=>{
       const m=d.data();
       const div=document.createElement("div");
-      div.className="msg "+(m.uid===me.uid?"me":"other");
-      div.innerHTML=`<div class="bubble">${m.text}</div>`;
+      div.className="msg "+(m.uid===me.uid?"me":"");
+
+      div.innerHTML=`
+      <div class="msgRow">
+        <img src="${m.avatar}" class="msgAvatar">
+        <div>
+          <div>${m.name}</div>
+          <div class="bubble">${m.text}</div>
+        </div>
+      </div>`;
+
       messages.appendChild(div);
     });
-    messages.scrollTop=messages.scrollHeight;
+
+    if(!firstLoad) msgSound.play().catch(()=>{});
+    firstLoad=false;
+  });
+
+  db.collection("chats").doc(id).onSnapshot(doc=>{
+    const t=doc.data()?.typing;
+    if(t && t.uid!==me.uid){
+      typingStatus.classList.remove("hidden");
+      typingName.innerText=t.name+" печатает";
+    }else typingStatus.classList.add("hidden");
   });
 }
 
 /* SEND */
-
-window.sendMsg=async ()=>{
-  if(!currentChat) return;
+window.sendMsg=async()=>{
+  if(!currentChat||!me) return;
 
   const text=msgInput.value.trim();
   if(!text) return;
 
-  await db.collection("messages")
-  .doc(currentChat)
-  .collection("items")
-  .add({
+  const u=(await db.collection("users").doc(me.uid).get()).data();
+
+  await db.collection("messages").doc(currentChat).collection("items").add({
     text,
     uid:me.uid,
+    name:u.name,
+    avatar:u.avatar||avatarUrl(u.name),
     time:Date.now()
   });
+
+  await db.collection("chats").doc(currentChat).set({typing:null},{merge:true});
 
   msgInput.value="";
 };
 
-/* PROFILE */
+/* TYPING */
+msgInput.addEventListener("input",async()=>{
+  if(!currentChat||!me) return;
 
-function avatarUrl(name){
-  return "https://api.dicebear.com/7.x/initials/svg?seed="+name;
-}
+  const u=(await db.collection("users").doc(me.uid).get()).data();
 
-window.openProfile=async ()=>{
-  profileModal.classList.remove("hidden");
+  await db.collection("chats").doc(currentChat).set({
+    typing:{uid:me.uid,name:u.name,time:Date.now()}
+  },{merge:true});
 
-  const doc=await db.collection("users").doc(me.uid).get();
-  const data=doc.data()||{};
-
-  profileName.value=data.name||"";
-  avatar.src=avatarUrl(profileName.value||"User");
-};
-
-window.closeProfile=()=>{
-  profileModal.classList.add("hidden");
-};
-
-window.saveProfile=async ()=>{
-  const name=profileName.value.trim();
-  if(!name) return alert("Введите имя");
-
-  await db.collection("users").doc(me.uid).set({name},{merge:true});
-  closeProfile();
-};
-
-/* LOGOUT */
+  clearTimeout(typingTimeout);
+  typingTimeout=setTimeout(()=>{
+    db.collection("chats").doc(currentChat).set({typing:null},{merge:true});
+  },1500);
+});
 
 window.logout=()=>auth.signOut();
