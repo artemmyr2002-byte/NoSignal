@@ -1,25 +1,45 @@
-<div id="authModal" class="modal">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <div class="modalBox">
+<title>NovaChat</title>
 
-    <div class="modalHeader">
-      <h2>Аккаунт</h2>
-      <button class="closeBtn" onclick="closeModal('authModal')">✕</button>
+<link rel="stylesheet" href="style.css">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- LEFT -->
+  <div class="sidebar">
+    <h3>NovaChat</h3>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat">
+
+    <div class="chatHeader">
+      <b>Global Chat</b>
     </div>
 
-    <div id="authError" class="error"></div>
+    <div class="messages" id="messages"></div>
 
-    <input id="email" placeholder="Email">
-    <input id="pass" type="password" placeholder="Пароль">
-
-    <button onclick="register()">Регистрация</button>
-    <button onclick="login()">Войти</button>
-
-    <hr>
-
-    <button onclick="googleLogin()">Google</button>
-    <button onclick="guestLogin()">Гость</button>
+    <div class="inputBar">
+      <input id="msgInput" placeholder="Написать сообщение...">
+      <button onclick="sendMsg()">➤</button>
+    </div>
 
   </div>
 
 </div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
