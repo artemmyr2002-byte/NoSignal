@@ -4,7 +4,6 @@ function el(id){ return document.getElementById(id); }
 
 window.onload = function(){
 
-/* гарантированно скрываем профиль */
 el("profile").style.display = "none";
 
 /* ===== AUTH ===== */
@@ -111,6 +110,7 @@ async function sendMessage(){
   await db.collection("messages").add({
     text,
     name,
+    uid: user.uid,
     time: Date.now()
   });
 
@@ -128,6 +128,13 @@ function loadMessages(){
 
         const div = document.createElement("div");
         div.className = "msg";
+
+        if(m.uid === user.uid){
+          div.classList.add("my");
+        }else{
+          div.classList.add("other");
+        }
+
         div.innerText = m.name + ": " + m.text;
 
         el("messages").appendChild(div);
