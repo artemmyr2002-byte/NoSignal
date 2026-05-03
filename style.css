@@ -34,7 +34,7 @@ button{
   cursor:pointer;
 }
 
-/* ПАНЕЛЬ ВСЕГДА СВЕРХУ */
+/* 🔥 ПАНЕЛЬ */
 .top{
   position:fixed;
   top:0;
@@ -62,26 +62,40 @@ button{
 #messages{
   flex:1;
   overflow-y:auto;
-  padding:10px;
+  padding:12px;
   display:flex;
   flex-direction:column;
+  gap:6px; /* 🔥 ближе сообщения */
 }
 
-/* СООБЩЕНИЯ */
+/* 🔥 КРАСИВЫЕ ПУЗЫРЬКИ */
 .msg{
   position:relative;
-  max-width:75%;
-  padding:10px;
-  margin:3px;
-  border-radius:12px;
+  max-width:70%;
+  padding:12px 14px;
+  border-radius:16px;
+  font-size:14px;
+  line-height:1.4;
+  box-shadow:0 2px 8px #0005;
 }
 
-.my{ align-self:flex-end; }
-.other{ align-self:flex-start; }
+/* МОИ */
+.my{
+  align-self:flex-end;
+  border-bottom-right-radius:4px;
+}
 
+/* ЧУЖИЕ */
+.other{
+  align-self:flex-start;
+  border-bottom-left-radius:4px;
+}
+
+/* ВРЕМЯ */
 .meta{
   font-size:10px;
   opacity:0.6;
+  margin-top:6px;
   text-align:right;
 }
 
