@@ -4,10 +4,9 @@ function el(id){ return document.getElementById(id); }
 
 window.onload = function(){
 
-/* гарантированно скрываем профиль */
 el("profile").style.display = "none";
 
-/* ===== AUTH ===== */
+/* AUTH */
 
 el("loginBtn").onclick = async ()=>{
   try{
@@ -40,7 +39,7 @@ el("guestBtn").onclick = ()=>{
   auth.signInAnonymously();
 };
 
-/* ===== STATE ===== */
+/* STATE */
 
 auth.onAuthStateChanged(async u=>{
   if(!u){
@@ -68,7 +67,7 @@ auth.onAuthStateChanged(async u=>{
   loadMessages();
 });
 
-/* ===== PROFILE ===== */
+/* PROFILE */
 
 el("profileBtn").onclick = ()=>{
   if(!user) return;
@@ -91,7 +90,7 @@ el("saveName").onclick = async ()=>{
   el("profile").style.display = "none";
 };
 
-/* ===== CHAT ===== */
+/* CHAT */
 
 el("sendBtn").onclick = sendMessage;
 
@@ -102,7 +101,8 @@ el("msgInput").addEventListener("keydown", e=>{
 async function sendMessage(){
   if(!user) return;
 
-  const text = el("msgInput").value.trim();
+  const input = el("msgInput");
+  const text = input.value.trim();
   if(!text) return;
 
   const userDoc = await db.collection("users").doc(user.uid).get();
@@ -111,47 +111,59 @@ async function sendMessage(){
   await db.collection("messages").add({
     text,
     name,
-    uid: user.uid, // теперь всегда сохраняем
-    time: Date.now()
+    uid: user.uid,
+    time: Date.now(),
+    read: true
   });
 
-  el("msgInput").value = "";
+  input.value = "";
 }
 
-/* ===== LOAD MESSAGES (ФИКС СТАРЫХ + НОВЫХ) ===== */
+/* LOAD */
 
 function loadMessages(){
   db.collection("messages")
     .orderBy("time")
     .onSnapshot(snap=>{
-      el("messages").innerHTML = "";
+      const container = el("messages");
+      container.innerHTML = "";
 
       snap.forEach(doc=>{
         const m = doc.data();
 
-        const div = document.createElement("div");
-        div.className = "msg";
-
-        // 🔥 ГЛАВНЫЙ ФИКС
-        if(
+        const isMe =
           (m.uid && m.uid === user.uid) ||
-          (!m.uid && m.name === el("name").innerText)
-        ){
-          div.classList.add("my");
+          (!m.uid && m.name === el("name").innerText);
+
+        const div = document.createElement("div");
+        div.className = "msg " + (isMe ? "my" : "other");
+
+        const date = new Date(m.time || Date.now());
+        const time =
+          date.getHours().toString().padStart(2,'0') + ":" +
+          date.getMinutes().toString().padStart(2,'0');
+
+        if(isMe){
+          div.innerHTML = `
+            ${m.text}
+            <div class="meta">${time} ✓✓</div>
+          `;
         }else{
-          div.classList.add("other");
+          div.innerHTML = `
+            <div class="name">${m.name}</div>
+            ${m.text}
+            <div class="meta">${time}</div>
+          `;
         }
 
-        div.innerText = m.name + ": " + m.text;
-
-        el("messages").appendChild(div);
+        container.appendChild(div);
       });
 
-      el("messages").scrollTop = el("messages").scrollHeight;
+      container.scrollTop = container.scrollHeight;
     });
 }
 
-/* ===== LOGOUT ===== */
+/* LOGOUT */
 
 el("logoutBtn").onclick = ()=>{
   auth.signOut();
