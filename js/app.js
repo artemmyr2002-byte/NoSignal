@@ -4,6 +4,9 @@ function el(id){ return document.getElementById(id); }
 
 window.onload = function(){
 
+/* гарантированно скрываем профиль */
+el("profile").style.display = "none";
+
 /* ===== AUTH ===== */
 
 el("loginBtn").onclick = async ()=>{
@@ -62,18 +65,18 @@ auth.onAuthStateChanged(async u=>{
   const data = (await ref.get()).data();
   el("name").innerText = data.name;
 
-  loadMessages(); // 👉 старт чата
+  loadMessages();
 });
 
 /* ===== PROFILE ===== */
 
 el("profileBtn").onclick = ()=>{
   if(!user) return;
-  el("profile").classList.remove("hidden");
+  el("profile").style.display = "flex";
 };
 
 el("closeProfile").onclick = ()=>{
-  el("profile").classList.add("hidden");
+  el("profile").style.display = "none";
 };
 
 el("saveName").onclick = async ()=>{
@@ -85,7 +88,7 @@ el("saveName").onclick = async ()=>{
   await db.collection("users").doc(user.uid).update({ name });
 
   el("name").innerText = name;
-  el("profile").classList.add("hidden");
+  el("profile").style.display = "none";
 };
 
 /* ===== CHAT ===== */
