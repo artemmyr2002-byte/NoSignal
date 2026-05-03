@@ -14,14 +14,8 @@
 
 <body>
 
-<div class="app">
+<div class="app hidden" id="app">
 
-  <!-- LEFT -->
-  <div class="sidebar">
-    <h3>NovaChat</h3>
-  </div>
-
-  <!-- CHAT -->
   <div class="chat">
 
     <div class="chatHeader">
@@ -39,7 +33,21 @@
 
 </div>
 
-<script src="app.js"></script>
+<!-- NAME MODAL -->
+<div class="modal" id="nameModal">
 
+  <div class="modalBox">
+
+    <h2>Введите имя</h2>
+
+    <input id="nameInput" placeholder="Ваше имя">
+
+    <button onclick="startChat()">Войти</button>
+
+  </div>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
