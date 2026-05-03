@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NeonSpace Chat</title>
+<title>NovaChat</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -16,35 +16,41 @@
 
 <body>
 
-<div class="bg"></div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">⚡ NovaChat</div>
+  <button id="loginBtn" onclick="openAuth()">Войти</button>
+</div>
 
+<!-- MAIN -->
 <div class="app">
 
-  <div class="sidebar">
-
-    <div id="profile"></div>
-
-    <button onclick="googleLogin()">Google login</button>
-    <button onclick="anonymousLogin()">Guest</button>
-
-    <h4>Servers</h4>
-    <div id="servers"></div>
-
-    <button onclick="createServer()">+ server</button>
-
-    <h4>Users</h4>
-    <div id="users"></div>
-
-  </div>
-
-  <div class="chat">
-
+  <div id="chat">
     <div id="messages"></div>
 
-    <input id="msgInput" placeholder="message...">
-
+    <div class="inputBar">
+      <button onclick="recordVoice()">🎤</button>
+      <input id="msgInput" placeholder="Сообщение...">
+    </div>
   </div>
 
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal hidden">
+  <div class="modalBox">
+
+    <h2>Вход</h2>
+
+    <button onclick="googleLogin()">Google</button>
+    <button onclick="anonLogin()">Гость</button>
+
+    <input id="email" placeholder="email">
+    <input id="pass" placeholder="password" type="password">
+
+    <button onclick="emailLogin()">Войти по почте</button>
+
+  </div>
 </div>
 
 <script src="app.js"></script>
