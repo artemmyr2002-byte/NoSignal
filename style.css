@@ -5,22 +5,21 @@ body{
   color:white;
 }
 
-.hidden{display:none}
-
-#auth, #app{
+.screen{
   height:100vh;
   display:flex;
   flex-direction:column;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   gap:10px;
 }
+
+.hidden{display:none}
 
 input{
   padding:10px;
   border-radius:8px;
   border:none;
-  width:220px;
 }
 
 button{
@@ -33,14 +32,41 @@ button{
 }
 
 .top{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  padding:10px;
   display:flex;
   justify-content:space-between;
+  padding:10px;
   background:#111;
+}
+
+#chat{
+  display:flex;
+  flex-direction:column;
+  height:90vh;
+}
+
+#messages{
+  flex:1;
+  overflow-y:auto;
+  padding:10px;
+}
+
+.msg{
+  margin:5px 0;
+  padding:8px;
+  background:#222;
+  border-radius:8px;
+}
+
+.send{
+  display:flex;
+  gap:5px;
+  padding:10px;
+}
+
+.modal{
+  background:#222;
+  padding:20px;
+  border-radius:10px;
 }
 
 #profile{
@@ -53,10 +79,4 @@ button{
   display:flex;
   justify-content:center;
   align-items:center;
-}
-
-.modal{
-  background:#222;
-  padding:20px;
-  border-radius:10px;
 }
