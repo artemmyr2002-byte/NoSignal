@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>NovaChat PRO</title>
+<title>NovaChat</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="./style.css">
 
+<!-- Firebase COMPAT -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -15,17 +16,20 @@
 
 <body>
 
-<div id="authScreen" class="center">
-  <h2>NovaChat</h2>
+<!-- AUTH -->
+<div id="auth" class="center">
+  <h1>NovaChat</h1>
   <button onclick="googleLogin()">Войти через Google</button>
   <button onclick="guestLogin()">Продолжить как гость</button>
 </div>
 
-<div class="app hidden" id="app">
+<!-- APP -->
+<div id="app" class="app hidden">
 
-  <!-- LEFT -->
+  <!-- SIDEBAR -->
   <div class="sidebar">
-    <button onclick="createChat()">+ Чат</button>
+    <div class="logo">💬 Nova</div>
+    <button onclick="createChat()">+ Новый чат</button>
     <div id="chatList"></div>
   </div>
 
@@ -40,7 +44,7 @@
     <div id="messages" class="messages"></div>
 
     <div class="inputBar">
-      <input id="msgInput" placeholder="Сообщение">
+      <input id="msgInput" placeholder="Сообщение...">
       <button onclick="sendMsg()">➤</button>
     </div>
 
@@ -48,6 +52,7 @@
 
 </div>
 
-<script src="app.js"></script>
+<script src="./app.js"></script>
+
 </body>
 </html>
