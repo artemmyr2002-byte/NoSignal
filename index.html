@@ -16,7 +16,7 @@
 <body>
 
 <!-- AUTH -->
-<div id="auth">
+<div id="auth" class="screen">
   <h1>NoSignal</h1>
 
   <input id="email" placeholder="Email">
@@ -38,19 +38,25 @@
     <button id="logoutBtn">Выйти</button>
   </div>
 
+  <!-- CHAT -->
+  <div id="chat">
+    <div id="messages"></div>
+
+    <div class="send">
+      <input id="msgInput" placeholder="Сообщение">
+      <button id="sendBtn">➤</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- PROFILE -->
 <div id="profile" class="hidden">
   <div class="modal">
-
     <h3>Профиль</h3>
-
     <input id="newName" placeholder="Имя">
-
     <button id="saveName">Сохранить</button>
     <button id="closeProfile">✕</button>
-
   </div>
 </div>
 
