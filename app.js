@@ -13,79 +13,106 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 let me = null;
-let userProfile = null;
+let username = null;
 let currentServer = "global";
 
 /* =========================
-   GOOGLE LOGIN
+   SAFE AUTH SYSTEM
 ========================= */
+
+auth.onAuthStateChanged(async user=>{
+
+  if(user){
+
+    me = user;
+    username = user.displayName || "User_" + user.uid.slice(0,5);
+
+    await db.collection("users").doc(me.uid).set({
+      name: username,
+      online: true,
+      avatar: user.photoURL || null
+    }, {merge:true});
+
+    startApp();
+
+  }
+
+});
+
+/* GOOGLE LOGIN */
 window.googleLogin = async function(){
 
   const provider = new firebase.auth.GoogleAuthProvider();
 
   try{
-    const result = await auth.signInWithPopup(provider);
-    me = result.user;
-
-    await db.collection("users").doc(me.uid).set({
-      name: me.displayName,
-      avatar: me.photoURL,
-      online: true,
-      last: Date.now()
-    }, {merge:true});
-
-    init();
-
+    await auth.signInWithRedirect(provider);
   } catch(e){
-    console.log("google login error", e);
+    console.log("google fail", e);
+    anonymousLogin();
   }
 
 };
 
-/* fallback anonymous */
-auth.onAuthStateChanged(async user=>{
-  if(user && !me){
-    me = user;
-
-    await db.collection("users").doc(me.uid).set({
-      name: "User_" + me.uid.slice(0,5),
-      online: true
-    }, {merge:true});
-
-    init();
+/* REDIRECT HANDLER */
+auth.getRedirectResult()
+.then(res=>{
+  if(res.user){
+    me = res.user;
+    startApp();
   }
+})
+.catch(()=>{
+  anonymousLogin();
 });
 
+/* ANONYMOUS FALLBACK */
+window.anonymousLogin = async function(){
+
+  const res = await auth.signInAnonymously();
+
+  me = res.user;
+  username = "Guest_" + me.uid.slice(0,5);
+
+  await db.collection("users").doc(me.uid).set({
+    name: username,
+    online: true,
+    type:"anon"
+  }, {merge:true});
+
+  startApp();
+
+};
+
 /* =========================
-   INIT
+   APP CORE
 ========================= */
-function init(){
-  loadProfile();
+
+function startApp(){
+
+  renderProfile();
   loadServers();
-  loadMessages();
   loadUsers();
+  loadMessages();
+
 }
 
 /* PROFILE */
-function loadProfile(){
+function renderProfile(){
 
-  db.collection("users").doc(me.uid).onSnapshot(doc=>{
-    const u = doc.data();
-
-    document.getElementById("profile").innerHTML = `
-      <b>${u.name}</b><br>
-      <img src="${u.avatar || ''}" width="40" style="border-radius:50%">
-    `;
-  });
+  document.getElementById("profile").innerHTML = `
+    <b>${username}</b><br>
+    <small>${me.uid.slice(0,6)}</small>
+  `;
 
 }
 
 /* =========================
-   SERVERS (UNLIMITED)
+   SERVERS
 ========================= */
+
 window.createServer = async function(){
 
-  const name = prompt("Server name:");
+  const name = prompt("server name");
   if(!name) return;
 
   await db.collection("servers").add({
@@ -104,6 +131,7 @@ function loadServers(){
     box.innerHTML = "";
 
     snap.forEach(d=>{
+
       const s = d.data();
 
       box.innerHTML += `
@@ -111,6 +139,7 @@ function loadServers(){
           # ${s.name}
         </div>
       `;
+
     });
 
   });
@@ -125,7 +154,9 @@ window.switchServer = function(id){
 /* =========================
    CHAT
 ========================= */
+
 document.getElementById("msgInput").addEventListener("keydown", async e=>{
+
   if(e.key !== "Enter") return;
 
   const text = e.target.value.trim();
@@ -134,11 +165,13 @@ document.getElementById("msgInput").addEventListener("keydown", async e=>{
   await db.collection("messages").add({
     text,
     uid: me.uid,
+    name: username,
     serverId: currentServer,
     time: Date.now()
   });
 
-  e.target.value="";
+  e.target.value = "";
+
 });
 
 function loadMessages(){
@@ -152,13 +185,16 @@ function loadMessages(){
     box.innerHTML = "";
 
     snap.forEach(d=>{
+
       const m = d.data();
 
       box.innerHTML += `
-        <div>
-          <b>${m.uid.slice(0,5)}</b>: ${m.text}
+        <div class="msg">
+          <b>${m.name}</b><br>
+          ${m.text}
         </div>
       `;
+
     });
 
     box.scrollTop = box.scrollHeight;
@@ -170,6 +206,7 @@ function loadMessages(){
 /* =========================
    USERS
 ========================= */
+
 function loadUsers(){
 
   db.collection("users").onSnapshot(snap=>{
@@ -178,6 +215,7 @@ function loadUsers(){
     box.innerHTML = "";
 
     snap.forEach(d=>{
+
       const u = d.data();
 
       box.innerHTML += `
@@ -185,18 +223,21 @@ function loadUsers(){
           ${u.online ? "🟢" : "⚪"} ${u.name}
         </div>
       `;
+
     });
 
   });
 
 }
 
-/* keep online */
+/* keep alive */
 setInterval(()=>{
+
   if(me){
     db.collection("users").doc(me.uid).update({
       online:true,
       last:Date.now()
     });
   }
+
 },5000);
