@@ -17,13 +17,6 @@ body{
   overflow:hidden;
 }
 
-.sidebar{
-  width:220px;
-  background:#111427;
-  padding:15px;
-  color:white;
-}
-
 .chat{
   flex:1;
   display:flex;
@@ -88,4 +81,46 @@ body{
   border-radius:10px;
   color:white;
   cursor:pointer;
+}
+
+/* modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.modalBox{
+  width:300px;
+  background:#0f1220;
+  padding:20px;
+  border-radius:15px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  color:white;
+}
+
+.modalBox input{
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#1c2040;
+  color:white;
+}
+
+.modalBox button{
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#ff00a6,#a100ff);
+  color:white;
+  cursor:pointer;
+}
+
+.hidden{
+  display:none;
 }
