@@ -5,55 +5,57 @@ body{
   color:white;
 }
 
-.screen{
+.hidden{display:none}
+
+#auth, #app{
   height:100vh;
   display:flex;
   flex-direction:column;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   gap:10px;
 }
 
-.hidden{display:none}
-
 input{
   padding:10px;
-  border:none;
   border-radius:8px;
+  border:none;
   width:220px;
 }
 
 button{
-  padding:10px 15px;
+  padding:10px;
   border:none;
   border-radius:8px;
-  background:#7b2ff7;
+  background:#6a5cff;
   color:white;
   cursor:pointer;
 }
 
-.topbar{
+.top{
   position:absolute;
   top:0;
   left:0;
   right:0;
-  background:#111;
   padding:10px;
   display:flex;
   justify-content:space-between;
+  background:#111;
 }
 
-.modal{
+#profile{
   position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
   background:#0008;
   display:flex;
   justify-content:center;
   align-items:center;
 }
 
-.box{
+.modal{
   background:#222;
   padding:20px;
   border-radius:10px;
