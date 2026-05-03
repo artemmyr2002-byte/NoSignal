@@ -159,7 +159,7 @@ el("msgInput").addEventListener("input",async()=>{
   const u=(await db.collection("users").doc(me.uid).get()).data();
 
   await db.collection("chats").doc(currentChat).set({
-      typing:{uid:me.uid,name:u.name,time:Date.now()}
+    typing:{uid:me.uid,name:u.name,time:Date.now()}
   },{merge:true});
 
   clearTimeout(typingTimeout);
