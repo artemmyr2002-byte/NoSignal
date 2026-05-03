@@ -2,7 +2,7 @@ body{margin:0;background:#0f1220;color:#fff;font-family:sans-serif}
 
 .center{height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px}
 
-button{padding:10px;border-radius:8px;border:none;background:#7b2ff7;color:#fff}
+button{padding:10px;border:none;border-radius:8px;background:#7b2ff7;color:white;cursor:pointer}
 
 .app{display:flex;height:100vh}
 .hidden{display:none}
@@ -22,9 +22,9 @@ button{padding:10px;border-radius:8px;border:none;background:#7b2ff7;color:#fff}
 .bubble{background:#333;padding:8px;border-radius:10px;margin-top:2px}
 
 .inputBar{display:flex;padding:10px}
-input{flex:1;padding:8px;border-radius:8px;border:none}
+input{flex:1;padding:8px;border:none;border-radius:8px}
 
-.typing{padding:5px;font-size:12px;opacity:0.7}
+.typing{padding:5px;font-size:12px;opacity:.7}
 
 .dots span{width:5px;height:5px;background:white;border-radius:50%;display:inline-block;animation:blink 1.4s infinite}
 .dots span:nth-child(2){animation-delay:.2s}
