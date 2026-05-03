@@ -2,6 +2,24 @@ let user = null;
 
 function el(id){ return document.getElementById(id); }
 
+/* 🎨 генерация цвета */
+function getUserColor(uid){
+  let hash = 0;
+  for(let i=0;i<uid.length;i++){
+    hash = uid.charCodeAt(i) + ((hash<<5)-hash);
+  }
+
+  const h = hash % 360;
+  return {
+    c1: `hsl(${h},70%,45%)`,
+    c2: `hsl(${(h+40)%360},70%,55%)`
+  };
+}
+
+/* 🚫 анти-спам */
+let lastSend = 0;
+const SEND_DELAY = 800; // мс
+
 window.onload = function(){
 
 el("profile").style.display = "none";
@@ -98,8 +116,15 @@ el("msgInput").addEventListener("keydown", e=>{
   if(e.key === "Enter") sendMessage();
 });
 
+/* ⚡ ОТПРАВКА БЕЗ ЛАГА */
 async function sendMessage(){
   if(!user) return;
+
+  const now = Date.now();
+
+  // 🚫 анти-спам
+  if(now - lastSend < SEND_DELAY) return;
+  lastSend = now;
 
   const input = el("msgInput");
   const text = input.value.trim();
@@ -108,15 +133,34 @@ async function sendMessage(){
   const userDoc = await db.collection("users").doc(user.uid).get();
   const name = userDoc.data().name;
 
+  const container = el("messages");
+
+  // 🔥 МГНОВЕННО ДОБАВЛЯЕМ В UI
+  const temp = document.createElement("div");
+  temp.className = "msg my";
+
+  const date = new Date();
+  const time =
+    date.getHours().toString().padStart(2,'0') + ":" +
+    date.getMinutes().toString().padStart(2,'0');
+
+  temp.innerHTML = `
+    ${text}
+    <div class="meta">${time} ⏳</div>
+  `;
+
+  container.appendChild(temp);
+  container.scrollTop = container.scrollHeight;
+
+  input.value = "";
+
+  // 🚀 отправка в firebase
   await db.collection("messages").add({
     text,
     name,
     uid: user.uid,
-    time: Date.now(),
-    read: true
+    time: Date.now()
   });
-
-  input.value = "";
 }
 
 /* LOAD */
@@ -149,8 +193,15 @@ function loadMessages(){
             <div class="meta">${time} ✓✓</div>
           `;
         }else{
+          const uid = m.uid || m.name;
+          const colors = getUserColor(uid);
+
+          div.style.background = `linear-gradient(135deg, ${colors.c1}, ${colors.c2})`;
+
           div.innerHTML = `
-            <div class="name">${m.name}</div>
+            <div class="name" style="color:${colors.c2}">
+              ${m.name}
+            </div>
             ${m.text}
             <div class="meta">${time}</div>
           `;
