@@ -1,6 +1,7 @@
 let user=null;
 let userData={};
 let editingId=null;
+let openedActions=null;
 
 function el(id){return document.getElementById(id);}
 
@@ -14,19 +15,22 @@ function toBase64(file){
 
 window.onload=function(){
 
+document.body.onclick=()=>{
+  if(openedActions){
+    openedActions.style.display="none";
+    openedActions=null;
+  }
+};
+
 /* AUTH */
 el("loginBtn").onclick=()=>auth.signInWithEmailAndPassword(el("email").value,el("password").value);
 
 el("registerBtn").onclick=async ()=>{
   const c=await auth.createUserWithEmailAndPassword(el("email").value,el("password").value);
-  await db.collection("users").doc(c.user.uid).set({
-    name:"User",
-    avatar:""
-  });
+  await db.collection("users").doc(c.user.uid).set({name:"User",avatar:""});
 };
 
 el("guestBtn").onclick=()=>auth.signInAnonymously();
-
 el("logoutBtn").onclick=()=>auth.signOut();
 
 /* ПРОФИЛЬ */
@@ -51,10 +55,7 @@ el("saveProfile").onclick=async ()=>{
     avatar=await toBase64(file);
   }
 
-  await db.collection("users").doc(user.uid).set({
-    name,
-    avatar
-  });
+  await db.collection("users").doc(user.uid).set({name,avatar});
 
   userData.name=name;
   userData.avatar=avatar;
@@ -84,14 +85,13 @@ auth.onAuthStateChanged(async u=>{
   loadMessages();
 });
 
-/* ОТПРАВКА */
+/* SEND */
 el("sendBtn").onclick=async ()=>{
   const text=el("msgInput").value.trim();
   const file=el("fileInput").files[0];
 
   if(!text && !file) return;
 
-  /* РЕДАКТИРОВАНИЕ */
   if(editingId){
     await db.collection("messages").doc(editingId).update({
       text,
@@ -123,14 +123,14 @@ el("sendBtn").onclick=async ()=>{
   el("fileInput").value="";
 };
 
-/* НАЧАТЬ РЕДАКТИРОВАНИЕ */
+/* EDIT */
 function startEdit(id,text){
   editingId=id;
   el("msgInput").value=text;
   el("sendBtn").innerText="Сохранить";
 }
 
-/* ЗАГРУЗКА */
+/* LOAD */
 function loadMessages(){
   db.collection("messages").orderBy("time")
   .onSnapshot(snap=>{
@@ -139,26 +139,38 @@ function loadMessages(){
 
     snap.forEach(doc=>{
       const m=doc.data();
-      const d=document.createElement("div");
-
       const isMe=m.uid===user.uid;
 
-      d.className="msg "+(isMe?"my":"other");
-      d.style.background="linear-gradient(135deg,#00a884,#008069)";
+      const row=document.createElement("div");
+      row.className="msg-row "+(isMe?"my-row":"other-row");
 
-      d.innerHTML=`
+      const avatar=document.createElement("img");
+      avatar.className="avatar";
+      avatar.src=m.avatar||"https://via.placeholder.com/40";
+
+      const msg=document.createElement("div");
+      msg.className="msg";
+
+      msg.innerHTML=`
         <div class="name">${m.name||"User"}</div>
-        ${m.avatar?`<img src="${m.avatar}" width="28">`:""}
         <div>${m.text||""}</div>
-        ${m.file?`<a href="${m.file}" target="_blank">📎 файл</a>`:""}
+        ${
+          m.file && m.file.startsWith("data:image")
+          ? `<img src="${m.file}">`
+          : m.file
+          ? `<a href="${m.file}" target="_blank">📎 файл</a>`
+          : ""
+        }
         <div class="meta">
           ${new Date(m.time).toLocaleTimeString()}
           ${m.edited?"(изменено)":""}
         </div>
       `;
 
+      /* КНОПКИ */
       if(isMe){
-        const box=document.createElement("div");
+        const actions=document.createElement("div");
+        actions.className="actions";
 
         const eBtn=document.createElement("button");
         eBtn.innerText="✏️";
@@ -174,17 +186,34 @@ function loadMessages(){
           db.collection("messages").doc(doc.id).delete();
         };
 
-        box.appendChild(eBtn);
-        box.appendChild(dBtn);
+        actions.appendChild(eBtn);
+        actions.appendChild(dBtn);
+        msg.appendChild(actions);
 
-        d.appendChild(box);
+        msg.onclick=(e)=>{
+          e.stopPropagation();
+
+          if(openedActions && openedActions!==actions){
+            openedActions.style.display="none";
+          }
+
+          actions.style.display="flex";
+          openedActions=actions;
+        };
       }
 
-      c.appendChild(d);
+      /* порядок: у тебя справа */
+      if(isMe){
+        row.appendChild(msg);
+        row.appendChild(avatar);
+      }else{
+        row.appendChild(avatar);
+        row.appendChild(msg);
+      }
+
+      c.appendChild(row);
     });
 
     c.scrollTop=c.scrollHeight;
   });
 }
-
-};
