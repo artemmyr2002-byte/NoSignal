@@ -34,45 +34,29 @@ button{
   cursor:pointer;
 }
 
-/* APP */
-#app{
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-}
-
-/* 🔥 ФИКСИРОВАННАЯ ПАНЕЛЬ */
+/* панель */
 .top{
   position:fixed;
   top:0;
   left:0;
   width:100%;
+  height:60px;
   z-index:1000;
 
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  padding:14px 16px;
+  justify-content:space-between;
 
+  padding:0 16px;
   background:#202c33;
 }
 
-.top-buttons{
-  display:flex;
-  gap:10px;
-}
-
-/* ЧАТ */
+/* чат */
 #chat{
-  flex:1;
+  height:100vh;
   display:flex;
   flex-direction:column;
-
-  max-width:1000px;
-  width:100%;
-  margin:0 auto;
-
-  margin-top:70px; /* 🔥 чтобы не лез под панель */
+  padding-top:60px;
 }
 
 #messages{
@@ -83,33 +67,41 @@ button{
   flex-direction:column;
 }
 
-/* СООБЩЕНИЯ */
+/* сообщения */
 .msg{
+  position:relative;
   max-width:75%;
   padding:10px;
   margin:3px;
   border-radius:12px;
-  word-wrap:break-word;
 }
 
 .my{ align-self:flex-end; }
 .other{ align-self:flex-start; }
 
-.name{
-  font-size:12px;
-}
-
 .meta{
   font-size:10px;
   opacity:0.6;
-  margin-top:4px;
   text-align:right;
 }
 
-/* ОТПРАВКА */
+/* 🔥 МЕНЮ У СООБЩЕНИЯ */
+.msg-menu{
+  position:absolute;
+  top:-35px;
+  right:0;
+  display:none;
+  gap:5px;
+}
+
+.msg-menu button{
+  padding:5px 8px;
+  font-size:12px;
+  background:#111;
+}
+
+/* ввод */
 .send{
-  position:sticky;
-  bottom:0;
   display:flex;
   padding:10px;
   background:#202c33;
@@ -118,16 +110,4 @@ button{
 .send input{
   flex:1;
   margin-right:10px;
-}
-
-/* МЕНЮ */
-.menu{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#202c33;
-  padding:10px;
-  border-radius:10px;
-  display:none;
 }
