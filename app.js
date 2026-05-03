@@ -11,9 +11,9 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-let me=null,currentChat=null,selectedAvatar="",typingTimeout=null,firstLoad=true;
+let me=null,currentChat=null,selectedAvatar="",typingTimeout=null;
 
-/* ELEMENTS */
+/* helper */
 const el=id=>document.getElementById(id);
 
 /* AUTH */
@@ -69,7 +69,7 @@ el("saveProfileBtn").onclick=async()=>{
   el("profileModal").classList.add("hidden");
 };
 
-/* AVATAR CLICK */
+/* AVATAR */
 document.querySelectorAll(".avatarOption").forEach(img=>{
   img.onclick=()=>{
     selectedAvatar=img.src;
@@ -92,7 +92,7 @@ function loadChats(){
   });
 }
 
-/* OPEN CHAT */
+/* OPEN */
 function openChat(id,name){
   currentChat=id;
   el("chatTitle").innerText=name;
@@ -118,17 +118,6 @@ function openChat(id,name){
 
       box.appendChild(div);
     });
-
-    if(!firstLoad) el("msgSound").play().catch(()=>{});
-    firstLoad=false;
-  });
-
-  db.collection("chats").doc(id).onSnapshot(doc=>{
-    const t=doc.data()?.typing;
-    if(t && me && t.uid!==me.uid){
-      el("typingStatus").classList.remove("hidden");
-      el("typingName").innerText=t.name+" печатает";
-    }else el("typingStatus").classList.add("hidden");
   });
 }
 
@@ -151,24 +140,5 @@ el("sendBtn").onclick=async()=>{
 
   el("msgInput").value="";
 };
-
-/* TYPING */
-el("msgInput").addEventListener("input",async()=>{
-  if(!currentChat||!me) return;
-
-  const u=(await db.collection("users").doc(me.uid).get()).data();
-
-  await db.collection("chats").doc(currentChat).set({
-    typing:{uid:me.uid,name:u.name,time:Date.now()}
-  },{merge:true});
-
-  clearTimeout(typingTimeout);
-  typingTimeout=setTimeout(()=>{
-    db.collection("chats").doc(currentChat).set({typing:null},{merge:true});
-  },1500);
-});
-
-/* LOGOUT */
-el("logoutBtn").onclick=()=>auth.signOut();
 
 });
