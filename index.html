@@ -24,28 +24,27 @@
 
 <div id="app" class="hidden">
 
-<div id="layout">
-
-<div id="sidebar">
-  <div id="chatList"></div>
-</div>
-
-<div id="chat">
+<div id="topBar">NoSignal</div>
 
 <div id="pinnedBar" class="hidden"></div>
 
 <div id="messages"></div>
 
-<div id="replyPreview" class="reply-preview"></div>
-
 <div class="send">
-  <input id="msgInput">
+  <input id="msgInput" placeholder="Сообщение">
   <input type="file" id="fileInput">
   <button id="sendBtn">➤</button>
 </div>
 
 </div>
-</div>
+
+<!-- профиль -->
+<div id="userProfile" class="modal hidden">
+  <div class="box">
+    <h3 id="profileName"></h3>
+    <p id="profileUsername"></p>
+    <p id="profileBio"></p>
+  </div>
 </div>
 
 <script src="js/firebase.js"></script>
