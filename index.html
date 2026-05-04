@@ -1,56 +1,51 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>NoSignal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>NoSignal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css">
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 </head>
+
 <body>
 
-<div id="auth" class="screen">
-  <h2>NoSignal</h2>
+<div id="auth">
+  <input id="username" placeholder="@username">
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Пароль">
   <button id="loginBtn">Войти</button>
   <button id="registerBtn">Регистрация</button>
-  <button id="guestBtn">Гость</button>
 </div>
 
 <div id="app" class="hidden">
 
-  <div class="top">
-    <div>Общий чат</div>
-    <div>
-      <button id="profileBtn">Профиль</button>
-      <button id="logoutBtn">Выйти</button>
-    </div>
-  </div>
+<div id="layout">
 
-  <div id="chat">
-    <div id="messages"></div>
-
-    <div class="send">
-      <input id="msgInput" placeholder="Сообщение...">
-      <input type="file" id="fileInput">
-      <button id="sendBtn">➤</button>
-    </div>
-  </div>
-
+<div id="sidebar">
+  <div id="chatList"></div>
 </div>
 
-<!-- ПРОФИЛЬ -->
-<div id="profile" class="profile hidden">
-  <div class="profile-box">
-    <input id="nameInput" placeholder="Ник">
-    <input type="file" id="avatarInput">
-    <button id="saveProfile">Сохранить</button>
-  </div>
+<div id="chat">
+
+<div id="pinnedBar" class="hidden"></div>
+
+<div id="messages"></div>
+
+<div id="replyPreview" class="reply-preview"></div>
+
+<div class="send">
+  <input id="msgInput">
+  <input type="file" id="fileInput">
+  <button id="sendBtn">➤</button>
+</div>
+
+</div>
+</div>
 </div>
 
 <script src="js/firebase.js"></script>
