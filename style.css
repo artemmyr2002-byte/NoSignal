@@ -5,24 +5,28 @@ body{
   color:white;
 }
 
-.hidden{ display:none !important; }
+.hidden{display:none}
 
-.top{
-  position:fixed;
-  top:0;
-  width:100%;
-  height:60px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 15px;
+#layout{display:flex;height:100vh}
+
+#sidebar{
+  width:260px;
+  background:#111;
+  overflow:auto;
+}
+
+.chat-item{
+  padding:10px;
+  border-bottom:1px solid #222;
+  cursor:pointer;
+}
+
+.chat-item.active{
   background:#202c33;
-  z-index:10;
 }
 
 #chat{
-  padding-top:60px;
-  height:100vh;
+  flex:1;
   display:flex;
   flex-direction:column;
 }
@@ -36,78 +40,41 @@ body{
   gap:6px;
 }
 
-/* СООБЩЕНИЕ */
-.msg-row{
-  display:flex;
-  align-items:flex-end;
-  gap:8px;
-}
-
-/* МОИ */
-.my-row{
-  justify-content:flex-end;
-}
-
-/* ЧУЖИЕ */
-.other-row{
-  justify-content:flex-start;
-}
-
-/* АВАТАР */
-.avatar{
-  width:34px;
-  height:34px;
-  border-radius:50%;
-  object-fit:cover;
-}
-
-/* ПУЗЫРЬ */
 .msg{
+  padding:10px;
+  border-radius:15px;
+  max-width:60%;
   position:relative;
-  max-width:65%;
-  padding:10px 12px;
-  border-radius:14px;
-  background:linear-gradient(135deg,#00a884,#008069);
 }
 
-/* ник */
-.name{
-  font-size:12px;
-  opacity:0.7;
-  margin-bottom:3px;
+.my{align-self:flex-end}
+.other{align-self:flex-start}
+
+.avatar{
+  width:40px;
+  height:40px;
+  border-radius:50%;
 }
 
-/* фото */
-.msg img{
-  max-width:200px;
+.msg video{
+  max-width:220px;
   border-radius:10px;
-  margin-top:5px;
 }
 
-/* время */
-.meta{
-  font-size:10px;
-  opacity:0.6;
-  margin-top:5px;
-  text-align:right;
-}
-
-/* кнопки */
-.actions{
-  display:none;
+.reactions{
+  display:flex;
   gap:5px;
   margin-top:5px;
 }
 
-.actions button{
-  font-size:12px;
+.reaction{
+  background:#0005;
   padding:3px 6px;
+  border-radius:10px;
 }
 
-/* ввод */
 .send{
   display:flex;
-  gap:5px;
   padding:10px;
   background:#202c33;
 }
@@ -115,28 +82,10 @@ body{
 .send input{
   flex:1;
   padding:10px;
-  border-radius:10px;
-  border:none;
-  background:#111;
-  color:white;
 }
 
-/* профиль */
-.profile{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:#0008;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:100;
-}
-
-.profile-box{
-  background:#202c33;
-  padding:20px;
-  border-radius:10px;
+#pinnedBar{
+  background:#333;
+  padding:8px;
+  cursor:pointer;
 }
